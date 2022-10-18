@@ -1,0 +1,6 @@
+#!/usr/bin/bash
+
+FILENAME=$(basename $1 .hs)
+ghc -dynamic $1
+./$FILENAME
+rm $FILENAME.hi $FILENAME.o $FILENAME
