@@ -8,6 +8,7 @@ import (
 var days = []func(string){
 	day01,
 	day02,
+    day03,
 }
 
 func assert(err error) {

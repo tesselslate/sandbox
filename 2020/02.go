@@ -33,9 +33,6 @@ func (p *Password) ValidatePosition() bool {
 func day02(input string) {
 	passwords := make([]Password, 0)
 	for _, v := range strings.Split(input, "\n") {
-		if v == "" {
-			continue
-		}
 		words := strings.Split(v, " ")
 		nums := strings.Split(words[0], "-")
 		a, err := strconv.Atoi(nums[0])
