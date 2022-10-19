@@ -1,6 +1,3 @@
-convInt :: String -> Int
-convInt x = read x :: Int
-
 calculate :: Int -> Int
 calculate x = div x 3 - 2
 
@@ -12,7 +9,7 @@ recurse x =
 
 main = do
   input <- readFile "inputs/1"
-  let ln = map convInt (lines input)
+  let ln = map read (lines input)
   part1 ln
   part2 ln
 
