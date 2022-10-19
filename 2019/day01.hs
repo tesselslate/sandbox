@@ -10,11 +10,9 @@ recurse x =
 main = do
   input <- readFile "inputs/1"
   let ln = map read (lines input)
-  part1 ln
-  part2 ln
+  print (part1 ln)
+  print (part2 ln)
 
-part1 input =
-  print (sum (map calculate input))
+part1 input = sum (map calculate input)
 
-part2 input =
-  print (sum (map (recurse . calculate) input))
+part2 input = sum (map (recurse . calculate) input)
