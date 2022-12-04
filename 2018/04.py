@@ -1,42 +1,30 @@
+import collections, util
 F = [l.strip() for l in open("inputs/04")]
 F.sort()
 
-minutes = dict()
-sleeping = dict()
+guards = dict()
+
 guard = 0
 lastmin = 0
-
 for l in F:
-    minute = int(l.split(" ")[1].strip("]").split(":")[1])
-    if "begins" in l:
-        guard = int(l.split(" ")[3].strip("#"))
-    elif "falls" in l:
-        lastmin = minute
-    elif "wakes" in l:
-        if guard in sleeping:
-            for i in range(lastmin, minute):
-                if i in minutes[guard]:
-                    minutes[guard][i] += 1
-                else:
-                    minutes[guard][i] = 1
-            sleeping[guard] += minute - lastmin
-        else:
-            minutes[guard] = dict()
-            for i in range(lastmin, minute):
-                minutes[guard][i] = 1
-            sleeping[guard] = minute - lastmin
-k = list(sleeping.keys())
-v = list(sleeping.values())
-sleepiest = k[v.index(max(v))]
-k = list(minutes[sleepiest].keys())
-v = list(minutes[sleepiest].values())
-maxmin = k[v.index(max(v))]
-print(sleepiest,maxmin)
-print(sleepiest*maxmin)
+    _, _, min, rem = util.scan("[%s %d:%d] %s", l)
+    if "Guard" in rem:
+        guard, = util.scan("Guard #%d begins", rem)
+        if guard not in guards:
+            guards[guard] = collections.Counter()
+    elif "falls" in rem:
+        lastmin = min
+    elif "wakes" in rem:
+        for i in range(lastmin, min):
+            guards[guard][i] += 1
+g, _ = util.max_countdict(guards)
+print(g * guards[g].most_common(1)[0][0])
 
-maximum = (0,0,0)
-for idx, guard in minutes.items():
-    for k, v in guard.items():
-        if v > maximum[0]:
-            maximum = (v,idx,k)
-print(maximum[2]*maximum[1])
+M = (0, 0)
+C = 0
+for guard, v in guards.items():
+    for min, count in v.items():
+        if count > C:
+            M = (min, guard)
+            C = count
+print(M[0]*M[1])
