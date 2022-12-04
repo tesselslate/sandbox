@@ -1,4 +1,5 @@
 import collections, itertools, math, string, util
+from dataclasses import dataclass
 from functools import cache
 from sys import argv
 
