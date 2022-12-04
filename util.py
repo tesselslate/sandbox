@@ -1,6 +1,46 @@
 import sys
 sys.setrecursionlimit(1000000)
 
+class graph:
+    """A simple graph data structure."""
+    data = {}
+
+    def add_edge(self, a, b):
+        if a in self.data:
+            self.data[a].append(b)
+        else:
+            self.data[a] = [b]
+        if b not in self.data:
+            self.data[b] = []
+
+    def dependencies(self, item):
+        """Returns a list of the node's dependencies."""
+        O = []
+        for k, v in self.data.items():
+            if item in v:
+                O.append(k)
+        return O
+
+    def dependents(self, item):
+        """Returns a list of all nodes which are dependent on the given node."""
+        return self.data[item].copy()
+
+    def find_useless(self):
+        """Returns a list of all nodes which do not have any dependents."""
+        O = []
+        for k, v in self.data.items():
+            if len(v) == 0:
+                O.append(k)
+        return O
+
+    def find_independent(self):
+        """Returns a list of all nodes which do not have any dependencies."""
+        O = list(self.data.keys())
+        for values in self.data.values():
+            for v in values:
+                if v in O: O.remove(v)
+        return O
+
 def grid(size, fill=None):
     """Returns a square grid with the given size and fill element."""
     return [[fill]*size for _ in range(size)]
