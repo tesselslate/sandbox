@@ -31,3 +31,5 @@ for i in range(len(I)):
     if I[i] == True:
         S += i - BUF
 print(S)
+print(2212 + 78*(50*10**9))
+# no idea where the pattern here is from but not gonna complain
