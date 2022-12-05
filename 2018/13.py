@@ -67,6 +67,7 @@ def run(crash):
     global c, d, fg, carts
     while True:
         # sort by (y, x)
+        r = []
         carts.sort(key = lambda c : c[0] * 10000 + c[1])
         for i in range(len(carts)):
             cart = carts[i]
@@ -94,6 +95,13 @@ def run(crash):
                     if crash:
                         print(carts[i][1], carts[i][0])
                         return
-                    # TODO: remove
+                    r += [i,j]
+        r.sort()
+        r.reverse()
+        for i in r:
+            del carts[i]
+        if len(carts) == 1:
+            print(carts[0][1], carts[0][0])
+            return
+run(True)
 run(False)
-#run(True)
