@@ -1,6 +1,4 @@
-import collections, itertools, math, string, util
-from dataclasses import dataclass
-from functools import cache
+import util
 from sys import argv
 
 SIZE = 7
@@ -29,16 +27,21 @@ class Game():
                 elif e == 1:
                     s += "#"
                 elif isinstance(e, Goblin):
-                    s += "G"
+                    if e.hp == 200:
+                        s += "G"
+                    else:
+                        s += "g"
                 else:
-                    s += "E"
+                    if e.hp == 200:
+                        s += "E"
+                    else:
+                        s += "e"
             S += s + "\n"
         return S
 
     def adjacent_enemies(self, r, c):
         O = []
         el = self.G[r][c]
-        goblin = isinstance(el, Goblin)
         check = [
                 (r+1,c),
                 (r-1,c),
@@ -47,9 +50,9 @@ class Game():
         ]
         for coords in check:
             if coords[0] >= 0 and coords[0] < SIZE and coords[1] >= 0 and coords[1] < SIZE:
-                if goblin and isinstance(self.G[coords[0]][coords[1]], Elf):
+                if isinstance(el, Goblin) and isinstance(self.G[coords[0]][coords[1]], Elf):
                     O.append(coords)
-                elif not goblin and isinstance(self.G[coords[0]][coords[1]], Goblin):
+                elif isinstance(el, Elf) and isinstance(self.G[coords[0]][coords[1]], Goblin):
                     O.append(coords)
         if len(O) == 0:
             return None
@@ -83,6 +86,17 @@ class Game():
         return O
 
     def attack(self, r, c):
+        # check for any adjacent enemies
+        adjacent = self.adjacent_enemies(r, c)
+        if adjacent:
+            # attack the most vulnerable adjacent enemy,
+            # then let the next unit have their turn
+            vuln = self.most_vulnerable(adjacent)
+            self.drain_health(vuln[0], vuln[1])
+            return True
+        return False
+
+    def drain_health(self, r, c):
         self.G[r][c].hp -= 3
         if self.G[r][c].hp <= 0:
             self.G[r][c] = None
@@ -162,14 +176,9 @@ class Game():
                 enemies = self.any_enemies(r, c)
                 if not enemies:
                     return True
-                
-                # check for any adjacent enemies
-                adjacent = self.adjacent_enemies(r, c)
-                if adjacent:
-                    # attack the most vulnerable adjacent enemy,
-                    # then let the next unit have their turn
-                    vuln = self.most_vulnerable(adjacent)
-                    self.attack(vuln[0], vuln[1])
+
+                # attack if possible
+                if self.attack(r, c):
                     continue
 
                 # find the set of all spots within range of an enemy
@@ -214,14 +223,23 @@ class Game():
                 m = (None, 10000)
                 for i, p in enumerate(prios):
                     if p != None and p < m[1]:
-                        print("d")
                         m = (i, p)
                 step = dirs[m[0]] # type: ignore
 
                 # now that we've determined the best step, take it.
+                print("move", r, c)
                 self.G[step[0]][step[1]] = el
                 self.G[r][c] = None
 
+                # attack if possible
+                if self.attack(r, c):
+                    continue
+
+        for r in range(SIZE):
+            for c in range(SIZE):
+                el = self.G[r][c]
+                if not isinstance(el, Goblin) and not isinstance(el, Elf):
+                    continue
         return False
 
 class Goblin():
