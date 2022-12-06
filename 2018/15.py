@@ -1,9 +1,18 @@
-import util
+# target: 226688
+import collections, util
 from sys import argv
 
-SIZE = 7
 F = [l.strip() for l in open(argv[1])]
+SIZE = len(F)
 grid = util.grid(SIZE)
+
+def get_adjacent(r, c):
+    return [
+            (r-1,c),
+            (r,c-1),
+            (r,c+1),
+            (r+1,c),
+    ]
 
 def first_in_order(pairs):
     pairs.sort()
@@ -20,6 +29,7 @@ class Game():
         S = ""
         for r in range(SIZE):
             s = ""
+            h = []
             for c in range(SIZE):
                 e = self.G[r][c]
                 if e == None:
@@ -31,45 +41,26 @@ class Game():
                         s += "G"
                     else:
                         s += "g"
+                    h.append(str(e.hp))
                 else:
                     if e.hp == 200:
                         s += "E"
                     else:
                         s += "e"
-            S += s + "\n"
+                    h.append(str(e.hp))
+            S += s + " " + ", ".join(h) + "\n"
         return S
 
     def adjacent_enemies(self, r, c):
         O = []
         el = self.G[r][c]
-        check = [
-                (r+1,c),
-                (r-1,c),
-                (r,c+1),
-                (r,c-1),
-        ]
-        for coords in check:
-            if coords[0] >= 0 and coords[0] < SIZE and coords[1] >= 0 and coords[1] < SIZE:
-                if isinstance(el, Goblin) and isinstance(self.G[coords[0]][coords[1]], Elf):
-                    O.append(coords)
-                elif isinstance(el, Elf) and isinstance(self.G[coords[0]][coords[1]], Goblin):
-                    O.append(coords)
-        if len(O) == 0:
-            return None
-        return O
-
-    def adjacent_spots(self, r, c):
-        O = []
-        check = [
-                (r+1,c),
-                (r-1,c),
-                (r,c+1),
-                (r,c-1),
-        ]
-        for coords in check:
-            if coords[0] >= 0 and coords[0] < SIZE and coords[1] >= 0 and coords[1] < SIZE:
-                if self.G[coords[0]][coords[1]] == None:
-                    O.append(coords)
+        isgob = isinstance(el, Goblin)
+        iself = isinstance(el, Elf)
+        for coords in get_adjacent(r, c):
+            if isgob and isinstance(self.G[coords[0]][coords[1]], Elf):
+                O.append(coords)
+            elif iself and isinstance(self.G[coords[0]][coords[1]], Goblin):
+                O.append(coords)
         return O
 
     def any_enemies(self, r, c):
@@ -113,9 +104,9 @@ class Game():
         # floodfill outwards in each direction, increasing the value
         # by 1 each time.
         FF = util.grid(SIZE, None)
-        Q = [(r, c, 0)]
+        Q = collections.deque([(r, c, 0)])
         while len(Q) > 0:
-            E = Q.pop()
+            E = Q.popleft()
             add_element(E[0]+1, E[1], E[2]+1)
             add_element(E[0]-1, E[1], E[2]+1)
             add_element(E[0], E[1]+1, E[2]+1)
@@ -145,8 +136,6 @@ class Game():
                 return
             else:
                 self.rounds += 1
-            print("tick", self.rounds)
-            print(self, "\n\n")
 
     def tick(self):
         for r in range(SIZE):
@@ -170,6 +159,8 @@ class Game():
                 el = self.G[r][c]
                 if not isinstance(el, Elf) and not isinstance(el, Goblin):
                     continue
+                if el.moved:
+                    continue
 
                 # check for any enemies at all.
                 # if there are none left, end the turn early. the game is over
@@ -184,7 +175,7 @@ class Game():
                 # find the set of all spots within range of an enemy
                 in_range_spots = set()
                 for enemy in enemies:
-                    for spot in self.adjacent_spots(enemy[0], enemy[1]):
+                    for spot in get_adjacent(enemy[0], enemy[1]):
                         in_range_spots.add(spot)
 
                 # if there are no inrange spots, next unit
@@ -213,12 +204,7 @@ class Game():
                 # then pick the square adjacent to the unit with the lowest value
                 # and sorted by reading order.
                 FF2 = self.floodfill(spot[0], spot[1])
-                dirs = [
-                    (r+1,c),
-                    (r,c-1),
-                    (r,c+1),
-                    (r-1,c)
-                ]
+                dirs = get_adjacent(r, c)
                 prios = [FF2[a[0]][a[1]] for a in dirs]
                 m = (None, 10000)
                 for i, p in enumerate(prios):
@@ -227,26 +213,28 @@ class Game():
                 step = dirs[m[0]] # type: ignore
 
                 # now that we've determined the best step, take it.
-                print("move", r, c)
                 self.G[step[0]][step[1]] = el
                 self.G[r][c] = None
+                el.moved = True
 
                 # attack if possible
-                if self.attack(r, c):
-                    continue
+                self.attack(step[0], step[1])
 
         for r in range(SIZE):
             for c in range(SIZE):
                 el = self.G[r][c]
                 if not isinstance(el, Goblin) and not isinstance(el, Elf):
                     continue
+                self.G[r][c].moved = False
         return False
 
 class Goblin():
     hp = 200
+    moved = False
 
 class Elf():
     hp = 200
+    moved = False
 
 for r in range(SIZE):
     for c in range(SIZE):
