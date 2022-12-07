@@ -19,25 +19,32 @@ class P():
 GOB = 0
 ELF = 1
 class Unit():
+    atk: int = 3
     typ: int = 0
     hp: int = 200
     alive: bool = True
 
-    def __init__(self, typ):
+    def __init__(self, typ, atk=3):
+        self.atk = atk
         self.typ = typ
 
 # parse input
 SIZE = len(F)
+U: dict[P, Unit]
 G = util.grid(SIZE, 0)
-U: dict[P, Unit] = {}
-for i, l in enumerate(F):
-    for j, c in enumerate(l):
-        if c == '#':
-            G[i][j] = 1
-        elif c == 'E':
-            U[P(i,j)] = Unit(ELF)
-        elif c == 'G':
-            U[P(i,j)] = Unit(GOB)
+
+def parse(atk=3):
+    global F, G, U, SIZE
+    U = {}
+
+    for i, l in enumerate(F):
+        for j, c in enumerate(l):
+            if c == '#':
+                G[i][j] = 1
+            elif c == 'E':
+                U[P(i,j)] = Unit(ELF, atk)
+            elif c == 'G':
+                U[P(i,j)] = Unit(GOB, 3)
 
 # functions
 def print_state():
@@ -65,7 +72,7 @@ def point_at(pos: P):
     if pos in U and U[pos].alive:
         return U[pos]
 
-def attack(pos: P) -> bool:
+def attack(pos: P, elf_death: bool) -> bool:
     unit = U[pos]
 
     # check if there are any enemies in range
@@ -75,8 +82,10 @@ def attack(pos: P) -> bool:
     if len(in_range) > 0:
         in_range.sort(key=lambda x : (U[x].hp, x))
         u = U[in_range[0]]
-        u.hp -= 3
+        u.hp -= unit.atk
         if u.hp <= 0:
+            if elf_death and u.typ == ELF:
+                raise ValueError
             u.alive = False
         return True
     return False
@@ -105,7 +114,7 @@ def score():
             S += u.hp
     return S * rounds
 
-def tick():
+def tick(elf_death):
     # do each unit's turn in reading order (T->B, L->R)
     for pos, unit in sorted(U.items(), key=lambda x : x[0]):
         if not unit.alive:
@@ -117,7 +126,7 @@ def tick():
             return False
 
         # try to attack
-        if attack(pos):
+        if attack(pos, elf_death):
             continue
 
         # if there are not, move and then try attacking again
@@ -136,8 +145,6 @@ def tick():
 
         # figure out which direction to go by doing BFS from the target square
         distance = bfs(best_spot)
-        if pos == P(2,5):
-            util.print_grid(distance)
         possible_moves = [p for p in pos.adj() if not point_at(p) and not G[p.r][p.c] and distance[p.r][p.c] >= 0]
         if len(possible_moves) == 0:
             continue
@@ -148,15 +155,27 @@ def tick():
         U[best_move] = unit
 
         # try to attack again after moving
-        attack(best_move)
+        attack(best_move, elf_death)
 
     return True
 
 # run game
 rounds = 0
 
-while tick():
-    print_state()
+parse()
+while tick(False):
     rounds += 1
 print(rounds)
 print(score())
+
+for atk in range(4,1000):
+    parse(atk)
+    try:
+        rounds = 0
+        while tick(True):
+            rounds += 1
+        print(atk)
+        print(score())
+        break
+    except:
+        print("fail", atk)
