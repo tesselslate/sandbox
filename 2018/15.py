@@ -1,4 +1,3 @@
-# target: 226688
 import collections, util
 from dataclasses import dataclass
 from sys import argv
@@ -6,277 +5,200 @@ from sys import argv
 F = [l.strip() for l in open(argv[1])]
 SIZE = len(F)
 
-@dataclass(eq=True, frozen=True)
-class P():
+ELF = 0
+GOB = 1
+
+@dataclass(eq = True, frozen = True)
+class P:
     r: int = 0
     c: int = 0
 
-def get_adjacent(p):
+    def __add__(self, p):
+        return P(self.r + p[0], self.c + p[1])
+
+class Unit:
+    p: P
+    typ: int = -1
+    hp: int = 200
+    alive: bool = True
+
+    def __init__(self, a, p: P, b=200, c=True):
+        self.p = p
+        self.typ = a
+        self.hp = b
+        self.alive = c
+
+def adjacent(p: P) -> list[P]:
     return [
-            P(p.r-1,p.c),
-            P(p.r,p.c-1),
-            P(p.r,p.c+1),
-            P(p.r+1,p.c)
+            p + (-1,0),
+            p + (0,-1),
+            p + (0,1),
+            p + (1,0),
     ]
 
-def tiebreaker(p, options):
-    adj = get_adjacent(p)
-    for i in range(4):
-        if adj[i] in options:
-            return adj[i]
-    raise ValueError
+def reading_order(ps) -> list[P]:
+    return sorted(ps, key=lambda x : (x.r, x.c))
 
-class Game():
+class Game:
     G = []
+    U: list[Unit] = []
     rounds = 0
 
-    def __init__(self, grid):
-        self.G = grid
+    def __init__(self, g, u):
+        self.G = g
+        self.U = u
 
-    def __str__(self):
-        S = ""
-        for r in range(SIZE):
+    def print(self):
+        us = sorted(self.U, key=lambda x : (x.p.r, x.p.c))
+        for i, y in enumerate(self.G):
             s = ""
-            h = []
-            for c in range(SIZE):
-                e = self.G[r][c]
-                if e == None:
-                    s += "."
-                elif e == 1:
-                    s += "#"
-                elif isinstance(e, Goblin):
-                    if e.hp == 200:
-                        s += "G"
-                    else:
-                        s += "g"
-                    h.append(str(e.hp))
+            for j, x in enumerate(y):
+                v = self.unit_at(P(i, j))
+                if v and v.alive:
+                    s += "G" if v.typ == GOB else "E"
                 else:
-                    if e.hp == 200:
-                        s += "E"
-                    else:
-                        s += "e"
-                    h.append(str(e.hp))
-            S += s + " " + ", ".join(h) + "\n"
-        return S
-
-    def adjacent_enemies(self, p: P) -> list[P]:
-        O = []
-        el = self.get(p)
-        isgob = isinstance(el, Goblin)
-        iself = not isgob
-        for coords in get_adjacent(p):
-            if isgob and isinstance(self.get(coords), Elf):
-                O.append(coords)
-            elif iself and isinstance(self.get(coords), Goblin):
-                O.append(coords)
-        return O
-
-    def any_enemies(self, p: P) -> list[P]:
-        O = []
-        goblin = isinstance(self.get(p), Goblin)
-        for r in range(SIZE):
-            for c in range(SIZE):
-                if goblin and isinstance(self.G[r][c], Elf):
-                    O.append(P(r,c))
-                elif not goblin and isinstance(self.G[r][c], Goblin):
-                    O.append(P(r,c))
-        return O
-
-    def attack(self, p: P) -> bool:
-        # check for any adjacent enemies
-        adjacent = self.adjacent_enemies(p)
-        if adjacent:
-            # attack the most vulnerable adjacent enemy,
-            # then let the next unit have their turn
-            self.drain_health(self.most_vulnerable(p, adjacent))
-            return True
-        return False
-
-    def drain_health(self, p: P):
-        self.get(p).hp -= 3
-        if self.get(p).hp <= 0:
-            self.set(p, None)
-
-    def floodfill(self, p: P):
-        def add_element(r, c, v):
-            if self.G[r][c] != None:
-                return
-            if not FF[r][c]:
-                FF[r][c] = v
-                Q.append((r, c, v))
-
-        # start at the given point.
-        # floodfill outwards in each direction, increasing the value
-        # by 1 each time.
-        FF = util.grid(SIZE, None)
-        Q = collections.deque([(p.r, p.c, 0)])
-        while len(Q) > 0:
-            E = Q.popleft()
-            add_element(E[0]+1, E[1], E[2]+1)
-            add_element(E[0]-1, E[1], E[2]+1)
-            add_element(E[0], E[1]+1, E[2]+1)
-            add_element(E[0], E[1]-1, E[2]+1)
-            FF[E[0]][E[1]] = E[2] # type: ignore
-        return FF # type: ignore
-
-    def outcome(self) -> int:
-        S = 0
-        for r in range(SIZE):
-            for c in range(SIZE):
-                el = self.G[r][c]
-                if isinstance(el, Elf):
-                    S += el.hp
-                elif isinstance(el, Goblin):
-                    S += el.hp
-        S *= self.rounds
-        return S
-
-    def most_vulnerable(self, player: P, enemies: list[P]) -> P:
-        hp = { p:self.get(p).hp for p in enemies }
-        m = min(hp.values())
-        s = [p for (p,v) in hp.items() if v == m]
-        if len(s) == 1:
-            return s[0]
-        return tiebreaker(player, s)
-
-    def get(self, p: P):
-        return self.G[p.r][p.c]
-
-    def set(self, p: P, v):
-        self.G[p.r][p.c] = v
+                    s += "#" if x == 1 else "."
+            s += " "
+            for u in us:
+                if u.alive and u.p.r == i:
+                    s += "E |" if u.typ == 0 else "G |"
+                    s += str(u.hp) + "| "
+            print(s)
 
     def run(self):
-        while True:
-            if self.tick():
-                return
-            else:
-                self.rounds += 1
+        self.rounds = 0
+        while self.tick() and self.rounds < 27:
+            self.rounds +=1
+            if self.rounds > 22:
+                print(self.rounds)
+                self.print()
+        return self.rounds
+
+    def outcome(self):
+        S = 0
+        for unit in self.U:
+            if unit.alive:
+                S += unit.hp
+        return S * self.rounds
 
     def tick(self):
-        for r in range(SIZE):
-            for c in range(SIZE):
-                #! identify enemies
-                  #! if none left, end (return TRUE to signify done)
-                #! if in range of a target:
-                  #! attack. choose the adjacent enemy with the lowest hp
-                  #! if there are multiple enemies with "the" lowest hp, first
-                  #! in reading order
-                  #! subtract 3 hp, if <= 0, remove enemy (set grid to none)
-                #! if no open squares in range of any enemy, next unit
-                #! OPEN SQUARE NEXT TO ENEMY:
-                  #! find reachable squares in range of an enemy (not blocked
-                  #! by other units). if none, next unit
-                  #! find nearest reachable square
-                  # take one step to nearest reachable square based on reading order
-                    # prioritize up, then right
+        units = sorted(self.U, key=lambda x : (x.p.r, x.p.c))
+        for unit in units:
+            pos = unit.p
+            if not unit.alive:
+                continue
 
-                # return if this space is not occupied by a unit
-                point = P(r, c)
-                el = self.get(point)
-                if not isinstance(el, Elf) and not isinstance(el, Goblin):
-                    continue
-                if el.moved:
-                    continue
+            # end if there are no enemies
+            all_enemies = self.all_enemies(unit)
+            if len(all_enemies) == 0:
+                return False
 
-                # check for any enemies at all.
-                # if there are none left, end the turn early. the game is over
-                enemies = self.any_enemies(point)
-                if len(enemies) == 0:
-                    return True
+            # attack if in range
+            adj = self.adj_enemies(unit)
+            if len(adj) != 0:
+                self.attack(adj)
+                continue
 
-                adj = self.adjacent_enemies(point)
-                if len(adj) == 0: # move if no adjacent enemies
-                    # find the set of all spots within range of an enemy
-                    in_range_spots = set()
-                    for enemy in enemies:
-                        for spot in get_adjacent(enemy):
-                            if self.get(spot) == None:
-                                in_range_spots.add(spot)
+            # not in range. move
+            # start by creating a flat list of all spots adjacent
+            # to enemies
+            adj = [adjacent(p) for p in all_enemies]
+            adj = [x for s in adj for x in s]
 
-                    # if there are no inrange spots, next unit
-                    if len(in_range_spots) == 0:
-                        continue
+            # prune the list to just empty spots. end if there are none
+            adj = [x for x in adj if self.G[x.r][x.c] == 0 and not self.unit_at(x)]
+            if len(adj) == 0:
+                continue
 
-                    # determine which steps are reachable and in how many
-                    # steps with a floodfill
-                    reachables = {}
-                    FF = self.floodfill(point)
-                    for spot in in_range_spots:
-                        v = FF[spot.r][spot.c]
-                        if v != None:
-                            reachables[spot] = v
+            # do bfs. get rid of all unreachable in-range positions, aka those
+            # which were not reached by the bfs. if any remain, find the closest.
+            bfs = self.floodfill(pos)
+            adj = [x for x in adj if bfs[x.r][x.c] >= 0]
+            if len(adj) == 0:
+                continue
+            closest = min(adj, key=lambda x : (bfs[x.r][x.c], x.r, x.c))
 
-                    # if no spots are reachable, continue
-                    if len(reachables) == 0:
-                        continue
+            # best spot found: do bfs again from the chosen spot to figure out
+            # which direction to move.
+            # - create a list of possible directions to move in
+            # - if there are no possible moves, return
+            # - find the best move (lowest distance, then reading order)
+            # - move there
+            bfs = self.floodfill(closest)
+            possible_moves = [x for x in adjacent(pos) if self.G[x.r][x.c] == 0 and not self.unit_at(x) and bfs[x.r][x.c] >= 0]
+            if len(possible_moves) == 0:
+                continue
+            best_move = min(possible_moves, key=lambda x : (bfs[x.r][x.c], x.r, x.c))
 
-                    # pick the spot which is closest
-                    m = min(reachables.values())
-                    spots = [p for p, v in reachables.items() if v == m]
-                    spot = None
-                    if len(spots) == 1:
-                        spot = spots[0]
-                    else:
-                        spot = min(spots, key=lambda n : (n.r, n.c))
+            unit.p = best_move
 
-                    # traverse back through the floodfill grid to find which step
-                    # to take.
-                    # perform another floodfill going back from the destination and
-                    # then pick the square adjacent to the unit with the lowest value
-                    # and sorted by reading order.
-                    FF2 = self.floodfill(spot)
-                    dirs = get_adjacent(point)
-                    prios = [FF2[a.r][a.c] for a in dirs]
-                    m = 10000
-                    for v in prios:
-                        if v != None and v < m:
-                            m = v
-                    s = [p for p in dirs if FF2[p.r][p.c] == m]
-                    step = tiebreaker(point, s)
+            # try to attack again after moving
+            adj = self.adj_enemies(unit)
+            if len(adj) != 0:
+                self.attack(adj)
 
-                    # now that we've determined the best step, take it.
-                    self.G[step.r][step.c] = el
-                    self.set(point, None)
-                    el.moved = True
-                    point = step
-                self.attack(point)
+        return True
 
-        for r in range(SIZE):
-            for c in range(SIZE):
-                el = self.G[r][c]
-                if not isinstance(el, Goblin) and not isinstance(el, Elf):
-                    continue
-                self.G[r][c].moved = False
-        return False
+    def adj_enemies(self, unit: Unit) -> list[Unit]:
+        O = []
+        adjs = adjacent(unit.p)
+        for adj in adjs:
+            v = self.unit_at(adj)
+            if v and v.typ != unit.typ and v.alive:
+                O.append(v)
+        return O
 
-class Goblin():
-    hp = 200
-    moved = False
+    def all_enemies(self, unit: Unit) -> list[P]:
+        O = []
+        for u in self.U:
+            if u != unit and u.alive and u.typ != unit.typ:
+                O.append(u.p)
+        return O
 
-class Elf():
-    hp = 200
-    moved = False
+    def attack(self, enemies: list[Unit]):
+        enemy = sorted(enemies, key=lambda x : (x.hp, x.p.r, x.p.c))[0]
+        enemy.hp -= 3
+        if enemy.hp <= 0:
+            enemy.alive = False
 
-grid = util.grid(SIZE)
+    def floodfill(self, pos: P):
+        F = util.grid(SIZE, -1)
+        Q = collections.deque([(pos, 0)])
+        F[pos.r][pos.c] = 0
+
+        def add(pos: P, val):
+            if F[pos.r][pos.c] >= 0 or self.G[pos.r][pos.c] == 1 or self.unit_at(pos):
+                return
+            F[pos.r][pos.c] = val
+            Q.append((pos, val))
+
+        while len(Q) > 0:
+            E = Q.popleft()
+            add(E[0] + (-1, 0), E[1] + 1)
+            add(E[0] + (0, -1), E[1] + 1)
+            add(E[0] + (0, 1), E[1] + 1)
+            add(E[0] + (1, 0), E[1] + 1)
+
+        return F
+
+    def unit_at(self, pos: P) -> Unit:
+        for i in self.U:
+            if i.p == pos:
+                return i
+        return None # type: ignore
+
+grid = util.grid(SIZE, 0)
+units = []
 for r in range(SIZE):
     for c in range(SIZE):
         e = F[r][c]
         if e == "G":
-            grid[r][c] = Goblin() # type: ignore
+            units.append(Unit(GOB, P(r,c)))
         elif e == "E":
-            grid[r][c] = Elf() # type: ignore
+            units.append(Unit(ELF, P(r,c)))
         elif e == "#":
-            grid[r][c] = 1 # type: ignore
-        else:
-            grid[r][c] = None
+            grid[r][c] = 1 
 
-G = Game(grid)
+G = Game(grid, units)
 G.run()
 print(G.outcome())
-print(G)
-
-# CHECK ORDERS:
-# - 1,2,3,4
-# - 1,2,4,3
-# - 1,3,2,4
-# - 3,1,2,4
