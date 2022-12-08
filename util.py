@@ -45,6 +45,10 @@ def grid(size, fill=None):
     """Returns a square grid with the given size and fill element."""
     return [[fill]*size for _ in range(size)]
 
+def grid2d(x, y, fill=None):
+    """Returns a grid with the given size and fill element."""
+    return [[fill]*y for _ in range(x)]
+
 def grid3d(size, fill=None):
     """Returns a 3D grid with the given size and fill element."""
     return [grid(size, fill) for _ in range(size)]
