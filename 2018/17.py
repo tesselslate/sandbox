@@ -1,10 +1,8 @@
-import collections, itertools, math, string, util
-from dataclasses import dataclass
-from functools import cache
+import util
 from sys import argv
 
+PADDING = 10
 F = [l.strip() for l in open(argv[1])]
-S = 0
 
 C = set()
 
@@ -26,52 +24,52 @@ for l in F:
             C.add((x, y))
 
 MIN_X = min(C, key=lambda x : x[0])[0]
-MAX_X = max(C, key=lambda x : x[0])[0]
 MIN_Y = min(C, key=lambda x : x[1])[1]
+MAX_X = max(C, key=lambda x : x[0])[0]
 MAX_Y = max(C, key=lambda x : x[1])[1]
-SIZE = max(MAX_X - MIN_X, MAX_Y - MIN_Y) + 3
-G = util.grid(SIZE, '.')
+XSIZE = MAX_X - MIN_X + PADDING * 2 + 1
+YSIZE = MAX_Y + 2
+G = util.grid2d(XSIZE, YSIZE, '.')
 
 for c in C:
-    G[c[0]-MIN_X+1][c[1]-MIN_Y+1] = '#'
+    G[c[0]-MIN_X+PADDING][c[1]] = '#'
 
 def print_grid(grid):
-    for y in range(len(grid)):
+    for x in range(YSIZE):
         s = ""
-        for x in range(len(grid)):
-            s += grid[x][y]
+        for y in range(XSIZE):
+            s += grid[y][x]
         print(s)
 
 R = set()
-R.add((500-MIN_X+1, 1))
+R.add((500-MIN_X+PADDING, MIN_Y))
 
-pointless_ticks = 0
-while pointless_ticks < 100:
+useless = 0
+while useless < 10:
     l = len(R)
 
-    G[500-MIN_X+1][1] = '|'
-
-    for x in range(SIZE):
-        for y in range(SIZE):
-            if G[x][y] != '|' or y == SIZE - 2:
+    G[500-MIN_X+PADDING][MIN_Y] = '|'
+    for x in range(XSIZE):
+        for y in range(YSIZE):
+            if G[x][y] != '|' or y == YSIZE - 2:
                 continue
 
             if G[x][y+1] == '.':
-                G[x][y] = '.'
                 R.add((x, y+1))
                 G[x][y+1] = '|'
-            elif G[x][y+1] != '|':
-                lb, rb = 0, SIZE - 2
+            elif G[x][y+1] == '~' or G[x][y+1] == '#':
+                lb, rb = 0, XSIZE - 2
                 ld, rd = False, False
+
                 for i in range(x, 0, -1):
-                    if G[i][y+1] == '.':
+                    if G[i][y+1] == '.' or G[i][y+1] == '|':
                         lb, ld = i, True
                         break
                     if G[i][y] == '#':
                         lb = i
                         break
-                for i in range(x, SIZE - 1):
-                    if G[i][y+1] == '.':
+                for i in range(x, XSIZE - 1):
+                    if G[i][y+1] == '.' or G[i][y+1] == '|':
                         rb, rd = i, True
                         break
                     if G[i][y] == '#':
@@ -84,5 +82,14 @@ while pointless_ticks < 100:
                     G[j][y] = '|' if ld or rd else '~'
 
     if l == len(R):
-        pointless_ticks += 1
+        useless += 1
+        continue
+    useless = 0
 print(len(R))
+
+S = 0
+for i in G:
+    for j in i:
+        if j == '~':
+            S += 1
+print(S)
