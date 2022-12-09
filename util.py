@@ -55,7 +55,10 @@ def grid3d(size, fill=None):
 
 def irange(start, stop, step=1):
     """Returns a range including the stop index."""
-    return range(start, stop + 1, step)
+    if stop >= start:
+        return range(start, stop + 1, step)
+    else:
+        return range(stop, start - 1, -step)
 
 def halves(x):
     """Returns the two halves of x."""
@@ -78,6 +81,20 @@ def max_dict(d, val=lambda n:n):
         if a > M[1]:
             M = (k, a)
     return M
+
+def parse_grid(grid, fn=None):
+    """Parses a grid from the given list of lines."""
+    R = len(grid)
+    C = len(grid[0])
+    G = grid2d(R,C)
+    for r in range(R):
+        for c in range(C):
+            if fn:
+                G[r][c] = fn(grid[r][c])
+            else:
+                G[r][c] = grid[r][c]
+
+    return G, R, C
 
 def print_grid(grid):
     """Pretty prints the given grid."""
