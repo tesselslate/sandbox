@@ -96,15 +96,39 @@ ops = {
 }
 
 def run(regs, bip, prog):
-    ip = 0
+    icount = 0
+    ip = regs[bip]
     while ip < len(prog):
         regs[bip] = ip
         instr = prog[ip]
         regs = ops[instr[0]](regs, instr[1], instr[2], instr[3])
         ip = regs[bip]
         ip += 1
-        print(instr, regs)
-    return regs[0]
+        regs[bip] = ip
+        if regs[5] > regs[4]:
+            print(icount, ip, instr, regs)
+        icount += 1
+    return regs
 
-print(run([0]*6, bip, prog))
-print(run([1,0,0,0,0,0], bip, prog))
+#print(run([0]*6, bip, prog))
+#print(run([1] + [0]*5, bip, prog))
+print(run([3,0,5275662,2,10551326,10551327], bip, prog))
+
+"""
+seti 1 3 2 # ip = 1
+seti 1 0 5
+mulr 2 5 1
+eqrr 1 4 1
+addr 1 3 3
+addi 3 1 3
+addr 2 0 0
+addi 5 1 5
+gtrr 5 4 1
+addr 3 1 3
+seti 2 2 3
+addi 2 1 2
+gtrr 2 4 1
+addr 1 3 3
+seti 1 1 3
+mulr 3 3 3
+"""
