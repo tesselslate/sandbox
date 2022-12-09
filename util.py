@@ -151,6 +151,10 @@ def scan(fmt, inp):
             out.append(int(content, 16))
     return out
 
+def sign(n):
+    """Returns the sign of the number."""
+    return -1 if n < 0 else 1
+
 if __name__ == "__main__":
     print("testing scan")
     assert scan("123", "123") == []
