@@ -153,7 +153,7 @@ def scan(fmt, inp):
 
 def sign(n):
     """Returns the sign of the number."""
-    return -1 if n < 0 else 1
+    return -1 if n < 0 else 0 if n == 0 else 1
 
 if __name__ == "__main__":
     print("testing scan")

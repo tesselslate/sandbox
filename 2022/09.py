@@ -1,4 +1,4 @@
-import util
+from util import *
 from sys import argv
 
 F = [l.strip() for l in open(argv[1])]
@@ -6,11 +6,8 @@ S = 0
 
 I = []
 for l in F:
-    a, b = util.scan("%s %d", l)
+    a, b = scan("%s %d", l)
     I.append([a,b])
-
-def sign(n):
-    return -1 if n < 0 else 1
 
 def sim(k):
     global I
