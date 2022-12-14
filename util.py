@@ -58,7 +58,7 @@ def irange(start, stop, step=1):
     if stop >= start:
         return range(start, stop + 1, step)
     else:
-        return range(stop, start - 1, -step)
+        return range(start, stop - 1, -step)
 
 def halves(x):
     """Returns the two halves of x."""
