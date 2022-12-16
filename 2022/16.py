@@ -17,42 +17,30 @@ for l in F:
         G.add_edge(a, w.strip(","))
     flow[a] = b
 
+flow_count = len([k for k in flow.keys() if flow[k] > 0])
+print(flow_count)
 M = 0
+def walk(total, ticks, opened, moves: list):
+    global M
+    if ticks <= 0:
+        return
+    if len(opened) == flow_count:
+        return
+    if total > M:
+        print(total, opened)
+    M = max(M, total)
 
-@dataclass
-class State:
-    S = 0
-    C = "AA"
-    opened = set()
+    current = moves[-1]
+    next = G.dependents(current)
+    possible_opens = [x for x in next if x not in opened]
+    if possible_opens:
+        max_flow = max(possible_opens, key=lambda x:flow[x])
+        walk(total + (max(ticks - 2, 0)) * flow[max_flow], ticks-2, opened | {max_flow}, moves.copy() + [max_flow])
+    for move in next:
+        if len(moves) > 1 and moves[-2] == move:
+            continue
+        m = moves.copy() + [move]
+        walk(total, ticks-1, opened, m)
 
-    def add_flow(self):
-        global M
-        for valve in self.opened:
-            self.S += flow[valve]
-        M = max(M, self.S)
-        if M == self.S:
-            print(M, self)
-
-    def run(self, ticks):
-        if ticks == 0:
-            return
-
-        open = flow[self.C] != 0
-        for move in G.dependents(self.C):
-            if move in self.opened:
-                continue
-
-            new_state = State()
-            new_state.S = self.S
-            new_state.C = move
-            new_state.opened = self.opened
-            new_state.run(ticks - 1)
-            if open:
-                new_state.opened = self.opened | {self.C}
-                new_state.run(ticks - 1)
-
-        self.add_flow()
-
-S = State()
-S.run(30)
-print(S.S)
+walk(0, 30, set(), ["AA"])
+print(M)
