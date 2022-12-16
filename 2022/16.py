@@ -17,30 +17,38 @@ for l in F:
         G.add_edge(a, w.strip(","))
     flow[a] = b
 
-flow_count = len([k for k in flow.keys() if flow[k] > 0])
-print(flow_count)
+valves = [k for k in flow.keys() if flow[k] > 0]
+visitable = {}
+for valve in valves + ["AA"]:
+    Q = collections.deque([(valve, 0)])
+    V = {}
+    while len(Q) > 0:
+        E = Q.popleft()
+        V[E[0]] = E[1]
+        for next in G.dependents(E[0]):
+            if next in V:
+                continue
+            V[next] = E[1]+1
+            Q.append((next,E[1]+1)) # type: ignore
+    visitable[valve] = {}
+    for key in V:
+        if key in valves and key != valve:
+            visitable[valve][key] = V[key]
+print(visitable)
+
 M = 0
-def walk(total, ticks, opened, moves: list):
+def walk(total, ticks, opened, c):
     global M
-    if ticks <= 0:
+    if len(opened) == len(valves) or ticks <= 0:
         return
-    if len(opened) == flow_count:
-        return
-    if total > M:
-        print(total, opened)
-    M = max(M, total)
 
-    current = moves[-1]
-    next = G.dependents(current)
-    possible_opens = [x for x in next if x not in opened]
-    if possible_opens:
-        max_flow = max(possible_opens, key=lambda x:flow[x])
-        walk(total + (max(ticks - 2, 0)) * flow[max_flow], ticks-2, opened | {max_flow}, moves.copy() + [max_flow])
-    for move in next:
-        if len(moves) > 1 and moves[-2] == move:
-            continue
-        m = moves.copy() + [move]
-        walk(total, ticks-1, opened, m)
+    # go to next valves
+    for v in valves:
+        if not v in opened:
+            new_ticks = ticks - visitable[c][v] - 1
+            val = total + (new_ticks)*flow[v]
+            M = max(M, val)
+            walk(val, new_ticks, opened | {v}, v)
 
-walk(0, 30, set(), ["AA"])
+walk(0, 30, set(), "AA")
 print(M)
