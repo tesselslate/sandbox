@@ -1,6 +1,4 @@
-import collections, itertools, math, string, util
-from dataclasses import dataclass
-from functools import cache
+import collections, itertools, util
 from sys import argv
 
 F = [l.strip() for l in open(argv[1])]
@@ -17,9 +15,9 @@ for l in F:
         G.add_edge(a, w.strip(","))
     flow[a] = b
 
-valves = [k for k in flow.keys() if flow[k] > 0]
+valves = {k for k in flow.keys() if flow[k] > 0}
 visitable = {}
-for valve in valves + ["AA"]:
+for valve in valves | {"AA"}:
     Q = collections.deque([(valve, 0)])
     V = {}
     while len(Q) > 0:
@@ -34,21 +32,67 @@ for valve in valves + ["AA"]:
     for key in V:
         if key in valves and key != valve:
             visitable[valve][key] = V[key]
-print(visitable)
 
-M = 0
 def walk(total, ticks, opened, c):
     global M
-    if len(opened) == len(valves) or ticks <= 0:
+    if ticks <= 0:
         return
 
     # go to next valves
-    for v in valves:
-        if not v in opened:
-            new_ticks = ticks - visitable[c][v] - 1
+    for v in valves - opened:
+        new_ticks = ticks - visitable[c][v] - 1
+        val = total + (new_ticks)*flow[v]
+        M = max(M, val)
+        walk(val, new_ticks, opened | {v}, v)
+
+def walk2(total, ticks, opened, a, b):
+    global M
+    if ticks <= 0:
+        return
+
+    wait = min(a[1], b[1])
+    ticks -= wait
+    a[1] -= wait
+    b[1] -= wait
+
+    if [a[1], b[1]] == [0, 0]:
+        # both can move
+        movable = valves - opened
+        if len(movable) >= 2:
+            for m in itertools.permutations(movable, 2):
+                aw = visitable[a[0]][m[0]] + 1
+                bw = visitable[b[0]][m[1]] + 1
+                at = ticks - aw
+                bt = ticks - bw
+                val = total + at*flow[m[0]] + bt*flow[m[1]]
+                M = max(M, val)
+                walk2(val, ticks, opened | {m[0], m[1]}, [m[0], aw], [m[1], bw])
+        elif len(movable) == 1:
+            for v in movable:
+                d = ticks - visitable[a[0]][v] - 1
+                M = max(M, total + d*flow[v])
+                d = ticks - visitable[b[0]][v] - 1
+                M = max(M, total + d*flow[v])
+    else:
+        # one can move
+        for v in valves - opened:
+            n = None
+            if a[1] == 0:
+                n = a.copy()
+            else:
+                n = b.copy()
+            n[1] = visitable[n[0]][v] + 1
+            n[0] = v
+            new_ticks = ticks - n[1]
             val = total + (new_ticks)*flow[v]
             M = max(M, val)
-            walk(val, new_ticks, opened | {v}, v)
+            na, nb = (n, b.copy()) if a[1] == 0 else (a.copy(), n)
+            walk2(val, ticks, opened | {v}, na, nb)
 
+M = 0
 walk(0, 30, set(), "AA")
+print(M)
+
+M = 0
+walk2(0, 26, set(), ["AA", 0], ["AA", 0])
 print(M)
