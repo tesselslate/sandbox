@@ -33,12 +33,40 @@ pub fn main() -> EmptyResult {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
     let blueprints = parse(&input);
+    // part 1
+    let state = State {
+        ore: 0,
+        clay: 0,
+        obi: 0,
+        ore_robots: 1,
+        clay_robots: 0,
+        obi_robots: 0,
+        geode_robots: 0,
+        geodes: 0,
+        ticks: 24,
+    };
     let sum: usize = blueprints
         .iter()
         .enumerate()
-        .map(|(i, b)| State::solve(b) as usize * (i + 1))
+        .map(|(i, b)| State::solve(b, state) as usize * (i + 1))
         .sum();
     println!("{}", sum);
+    let state = State {
+        ore: 0,
+        clay: 0,
+        obi: 0,
+        ore_robots: 1,
+        clay_robots: 0,
+        obi_robots: 0,
+        geode_robots: 0,
+        geodes: 0,
+        ticks: 32,
+    };
+    let sum = State::solve(&blueprints[0], state)
+        * State::solve(&blueprints[1], state)
+        * State::solve(&blueprints[2], state);
+    println!("{}", sum);
+
     Ok(())
 }
 
@@ -59,115 +87,94 @@ struct State {
 
 #[derive(Copy, Clone, Debug)]
 enum Robot {
-    None,
     Ore,
     Clay,
     Obi,
     Geode,
 }
 
+fn max(a: u16, b: u16) -> u16 {
+    if a > b {
+        a
+    } else {
+        b
+    }
+}
+
+type Costs<'a> = &'a [(Robot, &'a Cost); 4];
+
 impl State {
-    fn solve(blueprint: &Blueprint) -> u16 {
-        let state = Self {
-            ore: 0,
-            clay: 0,
-            obi: 0,
-            ore_robots: 1,
-            clay_robots: 0,
-            obi_robots: 0,
-            geode_robots: 0,
-            geodes: 0,
-            ticks: 24,
-        };
-        state.best_substate(blueprint)
-    }
-
-    fn best_substate(&self, blueprint: &Blueprint) -> u16 {
-        if let Some(states) = self.generate_substates(blueprint) {
-            let mut max = 0;
-            for state in states {
-                if state.ticks == 0 {
-                    if state.geodes > max {
-                        max = state.geodes;
-                    }
-                    continue;
-                }
-                let best = state.best_substate(blueprint);
-                if best > max {
-                    max = best;
-                }
-            }
-            max
-        } else {
-            0
-        }
-    }
-
-    #[inline]
-    fn can_build(&self, bp: &Blueprint) -> bool {
-        let costs = [&bp.ore, &bp.clay, &bp.obi, &bp.geode];
-        for cost in costs {
-            if cost.ore <= self.ore && cost.clay <= self.clay && cost.obi <= self.obi {
-                return true;
-            }
-        }
-        false
-    }
-
-    fn generate_substates(&self, blueprint: &Blueprint) -> Option<Vec<Self>> {
-        let mut new_state = *self;
-        if !new_state.can_build(blueprint) {
-            while !new_state.can_build(blueprint) {
-                new_state.ore += new_state.ore_robots;
-                new_state.clay += new_state.clay_robots;
-                new_state.obi += new_state.obi_robots;
-                new_state.geodes += new_state.geode_robots;
-                new_state.ticks -= 1;
-                if new_state.ticks == 0 {
-                    return None;
-                }
-            }
-        } else {
-            new_state.ticks -= 1;
-        }
+    fn solve(blueprint: &Blueprint, state: State) -> u16 {
         let costs = [
-            (
-                Robot::None,
-                &Cost {
-                    ore: 0,
-                    clay: 0,
-                    obi: 0,
-                },
-            ),
             (Robot::Ore, &blueprint.ore),
             (Robot::Clay, &blueprint.clay),
             (Robot::Obi, &blueprint.obi),
             (Robot::Geode, &blueprint.geode),
         ];
+        state.best_substate(&costs)
+    }
 
-        let mut v = Vec::new();
-        for (robot, cost) in costs {
-            if cost.ore <= self.ore && cost.clay <= self.clay && cost.obi <= self.obi {
-                v.push(new_state.generate_substate(cost, robot));
+    fn best_substate(mut self, blueprint: Costs) -> u16 {
+        let mut m = 0;
+        let mut ore = false;
+        let mut clay = false;
+        let mut obi = false;
+        while self.ticks > 0 {
+            // check for build robots
+            if ore && clay && obi {
+                break;
             }
+            // i dont think this is totally correct but it did work
+            if self.can_build(blueprint[3].1) {
+                m = max(m, self.build(blueprint[3]).best_substate(blueprint));
+                break
+            }
+            if !ore && self.can_build(blueprint[0].1) {
+                ore = true;
+                m = max(m, self.build(blueprint[0]).best_substate(blueprint));
+            }
+            if !clay && self.can_build(blueprint[1].1) {
+                clay = true;
+                m = max(m, self.build(blueprint[1]).best_substate(blueprint));
+            }
+            if !obi && self.can_build(blueprint[2].1) {
+                obi = true;
+                m = max(m, self.build(blueprint[2]).best_substate(blueprint));
+            }
+            self.gen_resources();
+            self.ticks -= 1;
         }
-        Some(v)
+        m = max(m, self.geodes);
+        m
     }
 
     #[inline]
-    fn generate_substate(&self, cost: &Cost, robot: Robot) -> Self {
-        // can this robot get built
+    fn can_build(&self, cost: &Cost) -> bool {
+        self.ore >= cost.ore && self.clay >= cost.clay && self.obi >= cost.obi
+    }
+
+    #[inline]
+    fn gen_resources(&mut self) {
+        self.ore += self.ore_robots;
+        self.clay += self.clay_robots;
+        self.obi += self.obi_robots;
+        self.geodes += self.geode_robots;
+    }
+
+    #[inline]
+    fn build(&self, robot: (Robot, &Cost)) -> Self {
         let mut new = *self;
-        match robot {
+        new.ore -= robot.1.ore;
+        new.clay -= robot.1.clay;
+        new.obi -= robot.1.obi;
+        new.ticks -= 1;
+        new.gen_resources();
+        match robot.0 {
             Robot::Ore => new.ore_robots += 1,
             Robot::Clay => new.clay_robots += 1,
             Robot::Obi => new.obi_robots += 1,
             Robot::Geode => new.geode_robots += 1,
-            _ => (),
         };
-        new.ore -= cost.ore;
-        new.clay -= cost.clay;
-        new.obi -= cost.obi;
         new
     }
 }
