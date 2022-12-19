@@ -83,24 +83,53 @@ impl State {
     }
 
     fn best_substate(&self, blueprint: &Blueprint) -> u16 {
-        let states = self.generate_substates(blueprint);
-        let mut max = 0;
-        for state in states {
-            if state.ticks == 0 {
-                if state.geodes > max {
-                    max = state.geodes;
+        if let Some(states) = self.generate_substates(blueprint) {
+            let mut max = 0;
+            for state in states {
+                if state.ticks == 0 {
+                    if state.geodes > max {
+                        max = state.geodes;
+                    }
+                    continue;
                 }
-                continue;
+                let best = state.best_substate(blueprint);
+                if best > max {
+                    max = best;
+                }
             }
-            let best = state.best_substate(blueprint);
-            if best > max {
-                max = best;
-            }
+            max
+        } else {
+            0
         }
-        max
     }
 
-    fn generate_substates(&self, blueprint: &Blueprint) -> [Self; 5] {
+    #[inline]
+    fn can_build(&self, bp: &Blueprint) -> bool {
+        let costs = [&bp.ore, &bp.clay, &bp.obi, &bp.geode];
+        for cost in costs {
+            if cost.ore <= self.ore && cost.clay <= self.clay && cost.obi <= self.obi {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn generate_substates(&self, blueprint: &Blueprint) -> Option<Vec<Self>> {
+        let mut new_state = *self;
+        if !new_state.can_build(blueprint) {
+            while !new_state.can_build(blueprint) {
+                new_state.ore += new_state.ore_robots;
+                new_state.clay += new_state.clay_robots;
+                new_state.obi += new_state.obi_robots;
+                new_state.geodes += new_state.geode_robots;
+                new_state.ticks -= 1;
+                if new_state.ticks == 0 {
+                    return None;
+                }
+            }
+        } else {
+            new_state.ticks -= 1;
+        }
         let costs = [
             (
                 Robot::None,
@@ -116,32 +145,29 @@ impl State {
             (Robot::Geode, &blueprint.geode),
         ];
 
-        let mut res: [Self; 5] = [State::default(); 5];
-        for (idx, (robot, cost)) in costs.iter().enumerate() {
-            res[idx] = self.generate_substate(cost, *robot);
+        let mut v = Vec::new();
+        for (robot, cost) in costs {
+            if cost.ore <= self.ore && cost.clay <= self.clay && cost.obi <= self.obi {
+                v.push(new_state.generate_substate(cost, robot));
+            }
         }
-        res
+        Some(v)
     }
 
     #[inline]
     fn generate_substate(&self, cost: &Cost, robot: Robot) -> Self {
         // can this robot get built
         let mut new = *self;
-        new.ticks -= 1;
-        let can_build = self.ore >= cost.ore && self.clay >= cost.clay && self.obi >= cost.obi;
-        new.ore += new.ore_robots;
-        new.clay += new.clay_robots;
-        new.obi += new.obi_robots;
-        new.geodes += new.geode_robots;
-        if can_build {
-            match robot {
-                Robot::Ore => new.ore_robots += 1,
-                Robot::Clay => new.clay_robots += 1,
-                Robot::Obi => new.obi_robots += 1,
-                Robot::Geode => new.geode_robots += 1,
-                _ => (),
-            };
-        }
+        match robot {
+            Robot::Ore => new.ore_robots += 1,
+            Robot::Clay => new.clay_robots += 1,
+            Robot::Obi => new.obi_robots += 1,
+            Robot::Geode => new.geode_robots += 1,
+            _ => (),
+        };
+        new.ore -= cost.ore;
+        new.clay -= cost.clay;
+        new.obi -= cost.obi;
         new
     }
 }
