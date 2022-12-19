@@ -1,9 +1,4 @@
-use std::{
-    cmp::Ordering,
-    collections::{BinaryHeap, HashMap},
-    hash::{Hash, Hasher},
-    io::{self, Read},
-};
+use std::io::{self, Read};
 
 type EmptyResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -41,13 +36,13 @@ pub fn main() -> EmptyResult {
     let sum: usize = blueprints
         .iter()
         .enumerate()
-        .map(|(i, b)| Solver::solve(Solver::new(), b) as usize * (i + 1))
+        .map(|(i, b)| State::solve(b) as usize * (i + 1))
         .sum();
     println!("{}", sum);
     Ok(())
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default)]
 struct State {
     ore: u16,
     clay: u16,
@@ -62,7 +57,7 @@ struct State {
     ticks: u8,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 enum Robot {
     None,
     Ore,
@@ -72,7 +67,40 @@ enum Robot {
 }
 
 impl State {
-    fn generate_substates(&self, blueprint: &Blueprint, res: &mut Vec<Self>) {
+    fn solve(blueprint: &Blueprint) -> u16 {
+        let state = Self {
+            ore: 0,
+            clay: 0,
+            obi: 0,
+            ore_robots: 1,
+            clay_robots: 0,
+            obi_robots: 0,
+            geode_robots: 0,
+            geodes: 0,
+            ticks: 24,
+        };
+        state.best_substate(blueprint)
+    }
+
+    fn best_substate(&self, blueprint: &Blueprint) -> u16 {
+        let states = self.generate_substates(blueprint);
+        let mut max = 0;
+        for state in states {
+            if state.ticks == 0 {
+                if state.geodes > max {
+                    max = state.geodes;
+                }
+                continue;
+            }
+            let best = state.best_substate(blueprint);
+            if best > max {
+                max = best;
+            }
+        }
+        max
+    }
+
+    fn generate_substates(&self, blueprint: &Blueprint) -> [Self; 5] {
         let costs = [
             (
                 Robot::None,
@@ -88,9 +116,11 @@ impl State {
             (Robot::Geode, &blueprint.geode),
         ];
 
-        for (robot, cost) in costs {
-            res.push(self.generate_substate(cost, robot));
+        let mut res: [Self; 5] = [State::default(); 5];
+        for (idx, (robot, cost)) in costs.iter().enumerate() {
+            res[idx] = self.generate_substate(cost, *robot);
         }
+        res
     }
 
     #[inline]
@@ -113,110 +143,5 @@ impl State {
             };
         }
         new
-    }
-}
-
-impl Hash for State {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.ore.hash(state);
-        self.clay.hash(state);
-        self.obi.hash(state);
-        self.ore_robots.hash(state);
-        self.clay_robots.hash(state);
-        self.obi_robots.hash(state);
-        self.geode_robots.hash(state);
-    }
-}
-
-impl PartialEq for State {
-    fn eq(&self, other: &Self) -> bool {
-        self.ore == other.ore
-            && self.clay == other.clay
-            && self.obi == other.obi
-            && self.ore_robots == other.ore_robots
-            && self.obi_robots == other.obi_robots
-            && self.clay_robots == other.clay_robots
-            && self.geode_robots == other.geode_robots
-    }
-}
-
-// TODO: optimize ordering?
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self
-            .geodes
-            .cmp(&other.geodes)
-            .then(self.ticks.cmp(&other.ticks))
-            .then(self.geode_robots.cmp(&other.geode_robots))
-            .then(self.obi_robots.cmp(&other.obi_robots))
-            .then(self.clay_robots.cmp(&other.clay_robots))
-            .then(self.ore_robots.cmp(&other.ore_robots))
-            .then(self.obi.cmp(&other.obi))
-            .then(self.clay.cmp(&other.obi))
-            .then(self.ore.cmp(&other.ore))
-    }
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-struct Solver {
-    states: HashMap<State, u16>,
-    queue: BinaryHeap<State>,
-}
-
-impl Solver {
-    fn new() -> Self {
-        Self {
-            states: HashMap::new(),
-            queue: BinaryHeap::new(),
-        }
-    }
-
-    fn solve(mut self, blueprint: &Blueprint) -> u16 {
-        let mut s = State::default();
-        let mut v = Vec::new();
-        s.ore_robots = 1;
-        s.ticks = 24;
-        self.queue.push(s);
-
-        while let Some(state) = self.queue.pop() {
-            if state.ticks == 0 {
-                println!("{}", state.geodes);
-                return state.geodes
-            }
-
-            if state.geodes > 0 {
-                println!("{:?} {}", state, self.states.len());
-            }
-
-            if let Some(score) = self.states.get_mut(&state) {
-                if *score < state.geodes {
-                    continue;
-                } else {
-                    *score = state.geodes;
-                }
-            }
-
-            v.clear();
-            state.generate_substates(blueprint, &mut v);
-            for state in &v {
-                if let Some(score) = self.states.get_mut(&state) {
-                    if *score < state.geodes {
-                        continue;
-                    } else {
-                        *score = state.geodes;
-                        self.queue.push(*state);
-                    }
-                } else {
-                    self.queue.push(*state);
-                    self.states.insert(*state, state.geodes);
-                }
-            }
-        }
-        u16::MAX
     }
 }
