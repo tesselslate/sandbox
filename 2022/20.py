@@ -12,6 +12,7 @@ def mix(A):
         for idx, val in enumerate(A):
             if val[0] == i:
                 j = idx
+                break
         if j == -1:
             raise ValueError
 
