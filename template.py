@@ -6,10 +6,10 @@ if len(sys.argv) > 1:
     F = open(sys.argv[1])
 else:
     F = sys.stdin.readlines()
-    if not F[-1].strip():
-        del F[-1]
 
 F = [l.strip() for l in F]
+while F[-1] == "":
+    del F[-1]
 
 S = 0
 
