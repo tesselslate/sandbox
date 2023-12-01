@@ -1,44 +1,41 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
-a = [i for i in range(128)]
-b = [i for i in range(8)]
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+    if not F[-1].strip():
+        del F[-1]
 
-S = set()
-M = 0
+F = [l.strip() for l in F]
+
+S = 0
+V = set()
+
 for l in F:
-    x = l[:7]
-    y = l[7:]
-
-    z = a
-    for c in x:
-        if c == "F":
-            z = z[:(len(z)//2)]
+    x, y = l[:7], l[7:]
+    a, b = list(range(128)), list(range(8))
+    for i in x:
+        if i == "F":
+            a, _ = ul.halves(a)
         else:
-            z = z[len(z)//2:]
-
-    assert len(z) == 1
-    i = z[0]
-
-    z = b
-    for c in y:
-        if c == "L":
-            z = z[:(len(z)//2)]
+            _, a = ul.halves(a)
+    for i in y:
+        if i == "R":
+            _, b = ul.halves(b)
         else:
-            z = z[len(z)//2:]
+            b, _ = ul.halves(b)
+    assert len(a) == len(b) == 1
 
-    assert len(z) == 1
-    j = z[0]
-
-    v = (i * 8 + j)
-    if v > M:
-        M = v
-    S.add(v)
-print(M)
+    v = a[0] * 8 + b[0]
+    if v > S:
+        S = v
+    V.add(v)
+print(S)
 
 for i in range(1024):
-    if i not in S:
+    if i not in V and i-1 in V and i+1 in V:
         print(i)
+        break
