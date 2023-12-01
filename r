@@ -1,6 +1,11 @@
 #!/usr/bin/fish
 
-set aoc_day (printf %02d (date +%d))
+if test -n $argv[1]
+    set aoc_day $argv[1]
+else
+    set aoc_day (date +%d)
+end
+set aoc_day (printf %02d $aoc_day)
 echo "Day $aoc_day"
 
 # p = paste and run
