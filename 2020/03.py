@@ -1,49 +1,43 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
-G = []
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+    if not F[-1].strip():
+        del F[-1]
 
-for l in F:
-    a = []
-    for c in l:
-        a += [c]
-    G += [a]
+F = [l.strip() for l in F]
+g = ul.grid(F)
 
-x = 0
-S = 0
-for i in range(0, len(F)):
-    if G[i][x] == "#":
-        S += 1
-    x = (x + 3) % len(F[0])
-print(S)
+i,j,k,x,y= 0,0,0,0,0
 
-a,b,c,d,e=0,0,0,0,0
-x=0
-for i in range(0, len(F)):
-    if G[i][x] == "#":
-        a += 1
-    x = (x + 1) % len(F[0])
-x=0
-for i in range(0, len(F)):
-    if G[i][x] == "#":
-        b += 1
-    x = (x + 3) % len(F[0])
-x=0
-for i in range(0, len(F)):
-    if G[i][x] == "#":
-        c += 1
-    x = (x + 5) % len(F[0])
-x=0
-for i in range(0, len(F)):
-    if G[i][x] == "#":
-        d += 1
-    x = (x + 7) % len(F[0])
-x=0
-for i in range(0, len(F), 2):
-    if G[i][x] == "#":
-        e += 1
-    x = (x + 1) % len(F[0])
-print(a*b*c*d*e)
+c = 0
+for r in range(len(g)):
+    if g[r][c] == "#":
+        i += 1
+    c = (c + 3) % len(g[0])
+c = 0
+for r in range(len(g)):
+    if g[r][c] == "#":
+        j += 1
+    c = (c + 1) % len(g[0])
+c = 0
+for r in range(len(g)):
+    if g[r][c] == "#":
+        k += 1
+    c = (c + 5) % len(g[0])
+c = 0
+for r in range(len(g)):
+    if g[r][c] == "#":
+        x += 1
+    c = (c + 7) % len(g[0])
+c = 0
+for r in range(0, len(g), 2):
+    if g[r][c] == "#":
+        y += 1
+    c = (c + 1) % len(g[0])
+c = 0
+print(i*j*k*x*y)
