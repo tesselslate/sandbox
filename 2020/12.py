@@ -13,10 +13,9 @@ F = [l.strip() for l in F]
 
 S = 0
 
-# NESW
-dirs = [(0,-1),(1,0),(0,1),(-1,0)]
-dir = dirs[1] # EAST
-d = "NESW"
+dirs = ul.padj4()
+d = ul.dirs()
+dir = dirs[ul.EAST] # EAST
 
 x, y = 0, 0
 for l in F:
@@ -50,10 +49,9 @@ for l in F:
 
 print(abs(x)+abs(y))
 
-# NESW
-dirs = [(0,-1),(1,0),(0,1),(-1,0)]
-dir = dirs[1] # EAST
-d = "NESW"
+dirs = ul.padj4()
+d = ul.dirs()
+dir = dirs[ul.EAST] # EAST
 
 x, y = 0, 0
 wx, wy = 10, -1
@@ -75,17 +73,11 @@ for l in F:
         case "L":
             n = b // 90
             for i in range(n):
-                nx = wy
-                ny = -wx
-                wx = nx
-                wy = ny
+                wx, wy = ul.pccw(wx, wy)
         case "R":
             n = b // 90
             for i in range(n):
-                nx = -wy
-                ny = wx
-                wx = nx
-                wy = ny
+                wx, wy = ul.pcw(wx, wy)
         case "F":
             x += (wx) * b
             y += (wy) * b
