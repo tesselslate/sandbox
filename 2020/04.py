@@ -1,69 +1,68 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+    if not F[-1].strip():
+        del F[-1]
+
+F = [l.strip() for l in F]
+F = ul.double_linefeed(F)
 
 S = 0
-ct = 0
-for l in F:
-    for w in l.split():
-        a,b=util.scan("%s:%s", w)
-        if a == "byr" or a == "iyr" or a == "eyr" or a == "hgt" or a == "hcl" or a == "ecl" or a == "pid":
-            ct+=1
-    if l == "":
-        if ct == 7:
-            S += 1
-        ct = 0
-if ct == 7:
-    S += 1
-ct = 0
+
+for p in F:
+    n = 0
+    for l in p:
+        w = l.split()
+        for x in w:
+            a, b = x.split(":")
+            if a in ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]: n += 1
+    if n == 7:
+        S += 1
 print(S)
 
 S = 0
-ct = 0
-for l in F:
-    for w in l.split():
-        a,b=util.scan("%s:%s", w)
-        if a == "byr":
-            if int(b) >= 1920 and int(b) <= 2002:
-                ct+=1
-        if a == "iyr":
-            if int(b) >= 2010 and int(b) <= 2020:
-                ct+=1
-        if a == "eyr":
-            if int(b) >= 2020 and int(b) <= 2030:
-                ct += 1
-        if a=="hgt":
-            l = b[:-2]
-            d = b[-2:]
-            if d == "cm":
-                if int(l) >= 150 and int(l) <= 193:
-                    ct += 1
-            if d == "in":
-                if int(l) >= 59 and int(l) <= 76:
-                    ct += 1
-        if a == "hcl":
-            if b[0] == "#":
-                bad = False
-                for i in range(6):
-                    if b[i+1] not in "abcdef0123456789":
-                        bad = True
-                        break
-                if not bad:
-                    ct += 1
-        if a == "ecl":
-            if b in ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]:
-                ct += 1
-        if a == "pid":
-            if len(b) == 9 and b.isdigit():
-                ct += 1
-    if l == "":
-        if ct == 7:
-            S += 1
-        ct = 0
-if ct == 7:
-    S += 1
-ct = 0
+for p in F:
+    n = 0
+    for l in p:
+        w = l.split()
+        for x in w:
+            a, b = x.split(":")
+            match a:
+                case "byr":
+                    if 1920 <= int(b) <= 2002: n += 1
+                case "iyr":
+                    if 2010 <= int(b) <= 2020: n += 1
+                case "eyr":
+                    if 2020 <= int(b) <= 2030: n += 1
+                case "hgt":
+                    x = b[-2:]
+                    y = b[:-2]
+                    if x == "in":
+                        if 59 <= int(y) <= 76:
+                            n += 1
+                    if x == "cm":
+                        if 150 <= int(y) <= 193:
+                            n += 1
+                case "hcl":
+                    if b[0] == "#":
+                        bad = False
+                        for i in range(1, 7):
+                            if b[i] not in "0123456789abcdef":
+                                bad = True
+                                break
+                        if not bad:
+                            n += 1
+                case "ecl":
+                    if b in ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]:
+                        n += 1
+                case "pid":
+                    if b.isdigit() and len(b) == 9:
+                        n += 1
+    if n == 7:
+        S += 1
 print(S)
