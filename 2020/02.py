@@ -1,30 +1,33 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+    if not F[-1].strip():
+        del F[-1]
+
+F = [l.strip() for l in F]
 
 S = 0
 for l in F:
-    a, b, c, d = util.scan("%d-%d %s: %s", l)
+    a, b, c, d = ul.scan("%d-%d %s: %s", l)
     n = 0
-    for char in d:
-        if char == c:
+    for ch in d:
+        if ch == c:
             n += 1
-
     if a <= n <= b:
         S += 1
 print(S)
 
 S = 0
 for l in F:
-    a, b, c, d = util.scan("%d-%d %s: %s", l)
+    a, b, c, d = ul.scan("%d-%d %s: %s", l)
     n = 0
-    if d[a-1] == c:
-        n += 1
-    if d[b-1] == c:
-        n += 1
-    if n == 1: S+=1
-
+    if d[a-1] == c: n += 1
+    if d[b-1] == c: n += 1
+    if n == 1:
+        S += 1
 print(S)
