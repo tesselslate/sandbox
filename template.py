@@ -11,5 +11,7 @@ else:
 
 F = [l.strip() for l in F]
 
+S = 0
+
 for l in F:
     print(l)
