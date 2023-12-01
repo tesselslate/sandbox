@@ -3,6 +3,20 @@ import collections, itertools, re, sys
 sys.setrecursionlimit(10 ** 6)
 
 """
+Helpers
+"""
+
+def itersplit(inp, delim):
+    xs = []
+    for x in inp:
+        if x == delim:
+            yield xs
+            xs = []
+        else:
+            xs += [x]
+    yield xs
+
+"""
 2D functions
 """
 
@@ -60,7 +74,7 @@ def double_linefeed(inp):
     EF
     [["A", "B"], ["C"], ["D", "EF"]]
     """
-    return [[l.strip() for l in x] for x in itertools.groupby(inp, "")]
+    return [[l.strip() for l in x] for x in itersplit(inp, "")]
 
 def halves(x):
     """Two halves of a string or list."""
