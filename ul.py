@@ -34,6 +34,16 @@ def grid(inp, func=None):
         func = lambda x : x
     return [[func(x) for x in l] for l in inp]
 
+def gridcheck(grid, r, c):
+    """Checks if r,c is in bounds."""
+    return r >= 0 and r < len(grid) and c >=0 and c < len(grid[0])
+
+def gridget(grid, r, c, default=None):
+    """Gets the element at r,c or returns the default"""
+    if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[0]):
+        return default
+    return grid[r][c]
+
 def manhat(a, b):
     """Manhattan distance of two points stored as complex numbers."""
     return abs(a.real-b.real) + abs(a.imag-b.imag)
