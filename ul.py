@@ -21,11 +21,11 @@ def itersplit(inp, delim):
 """
 
 def ccw(x):
-    """Rotate 2d point counter-clockwise around the origin"""
+    """Rotate 2d point (complex) counter-clockwise around the origin"""
     return x * -1j
 
 def cw(x):
-    """Rotate 2d point clockwise around the origin"""
+    """Rotate 2d point (complex) clockwise around the origin"""
     return x * 1j
 
 def grid(inp, func=None):
@@ -41,6 +41,31 @@ def manhat(a, b):
 def rots():
     """All 2d rotations (multiply)"""
     return [1, -1, 1j, -1j]
+
+def dirs():
+    return "NESW"
+
+EAST = 1
+
+"""
+2D (integer point) functions
+"""
+
+def padj8():
+    """All 8 2d adjacent offsets (x,y tuples)"""
+    return [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]
+
+def pccw(x, y):
+    """Rotate 2d point (integers) counter-clockwise around the origin"""
+    return y, -x
+
+def pcw(x, y):
+    """Rotate 2d point (integers) clockwise around the origin"""
+    return -y, x
+
+def padj4():
+    """All 4 2d adjacent offsets (x,y tuples)"""
+    return [(0,-1),(1,0),(0,1),(-1,0)]
 
 """
 Graph functions
