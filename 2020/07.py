@@ -1,43 +1,51 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+    if not F[-1].strip():
+        del F[-1]
 
-G = {}
-Z = {}
+F = [l.strip() for l in F]
+
+S = 0
+G = defaultdict(dict)
+
 for l in F:
-    w = l.split()
-    t = " ".join([w[0], w[1]])
-    w = w[4:]
-    if "no other bags" in l:
+    a, b, c = ul.scan("%s %s bags contain %s", l.strip("."))
+    key = " ".join([a,b])
+    if "no other bags" in c:
         continue
-    for i in range(0, len(w), 4):
-        k = " ".join([w[1+i], w[i+2]])
-        if k not in G:
-            G[k] = {}
-        G[k][t] = int(w[i])
-        if t not in Z:
-            Z[t] = {}
-        Z[t][k] = int(w[i])
+    for i in range(0, len(c), 4):
+        x = c.split(" ")[i:i+4]
+        if len(x) == 0:
+            break
+        n, y, z = int(x[0]), x[1], x[2]
+        key2 = " ".join([y, z])
+        G[key][key2] = n
 
-S = set()
-def recurse(tbl):
-    global S
-    for k in tbl.keys():
-        S.add(k)
+v = set()
+def re(t):
+    global v
+    for k in t.keys():
+        v.add(k)
         if k in G:
-            recurse(G[k])
-recurse(G["shiny gold"])
-print(len(S))
+            re(G[k])
+    
+G = ul.rev_graph(G)
+re(G["shiny gold"])
+print(len(v))
 
-def re2(tbl):
-    a = 0
-    for k, v in tbl.items():
-        if k in Z:
-            a += v * (re2(Z[k])+1)
+G = ul.rev_graph(G)
+def re2(t):
+    s = 0
+    for k, v in t.items():
+        if k in G:
+            s += (1 + re2(G[k])) * v
         else:
-            a += v
-    return a
-print(re2(Z["shiny gold"]))
+            s += v
+    return s
+print(re2(G["shiny gold"]))
