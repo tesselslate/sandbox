@@ -1,10 +1,7 @@
 #!/usr/bin/fish
 
-if test -n $argv[1]
-    set aoc_day $argv[1]
-else
-    set aoc_day (date +%d)
-end
+# TODO: fix for manual day number
+set aoc_day (date +%d)
 set aoc_day (printf %02d $aoc_day)
 echo "Day $aoc_day"
 
@@ -16,8 +13,10 @@ echo "Day $aoc_day"
 
 switch $argv[1]
     case "p"
-        echo "Running clipboard"
-        wl-paste | pypy3 ./$aoc_day.py
+        set aoc_file (mktemp)
+        wl-paste | tee $aoc_file > /dev/null
+        pypy3 $aoc_day.py $aoc_file
+        rm $aoc_file
     case "s"
         set aoc_index 0
         while true
@@ -36,8 +35,12 @@ switch $argv[1]
         end
     case "tl"
         set aoc_test_file (command ls -1 | grep test | tail -n 1)
-        echo "Running test $aoc_index"
-        pypy3 ./$aoc_day.py $aoc_test_file
+        if test -n "$aoc_test_file"
+            echo "Running test $aoc_index"
+            pypy3 ./$aoc_day.py $aoc_test_file
+        else
+            echo "No test file found"
+        end
     case "*"
         echo "Running input"
         pypy3 ./$aoc_day.py inputs/$aoc_day
