@@ -80,7 +80,7 @@ def halves(x):
     """Two halves of a string or list."""
     l = len(x)
     assert l % 2 == 0
-    return x[:l], x[l:]
+    return x[:l//2], x[l//2:]
 
 def ints(inp):
     """Return all ints in the given string in a list."""
