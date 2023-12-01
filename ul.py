@@ -50,7 +50,7 @@ def rev_graph(g):
     """Takes a graph (two-layer dictionary) and reverses the direction."""
     n = dict()
     for j in g.keys():
-        for k, v in g[j]:
+        for k, v in g[j].items():
             if k not in n:
                 n[k] = {}
             n[k][j] = v
