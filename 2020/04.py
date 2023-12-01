@@ -50,12 +50,7 @@ for p in F:
                             n += 1
                 case "hcl":
                     if b[0] == "#":
-                        bad = False
-                        for i in range(1, 7):
-                            if b[i] not in "0123456789abcdef":
-                                bad = True
-                                break
-                        if not bad:
+                        if set(b[1:]) & set("1234567890abcdef") == set(b[1:]):
                             n += 1
                 case "ecl":
                     if b in ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]:
