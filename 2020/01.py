@@ -1,24 +1,23 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [int(l.strip()) for l in open(argv[1])]
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+    if not F[-1].strip():
+        del F[-1]
 
-def a():
-    for i in range(len(F)):
-        for j in range(len(F)):
-            if F[i] + F[j] == 2020:
-                print(F[i] * F[j])
-                return
+F = [l.strip() for l in F]
+F = [int(l) for l in F]
 
-def b():
-    for i in range(len(F)):
-        for j in range(len(F)):
-            for k in range(len(F)):
-                if F[i] + F[j] + F[k] == 2020:
-                    print(F[i] * F[j] * F[k])
-                    exit()
+for p in itertools.combinations(F, 2):
+    if p[0] + p[1] == 2020:
+        print(p[0] * p[1])
+        break
 
-a()
-b()
+for p in itertools.combinations(F, 3):
+    if p[0] + p[1] + p[2] == 2020:
+        print(p[0] * p[1] * p[2])
+        break
