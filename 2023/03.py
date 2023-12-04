@@ -1,6 +1,6 @@
 import functools, math, re, string, sys, itertools, ul
 from dataclasses import dataclass
-from collections import Counter, defaultdict, deque
+from collections import Counter, defaultdict, OrderedDict, deque
 
 if len(sys.argv) > 1:
     F = open(sys.argv[1])
@@ -10,60 +10,36 @@ else:
 F = [l.strip() for l in F]
 while F[-1] == "":
     del F[-1]
+
 G = ul.grid(F)
 
 S = 0
-
-GUID = 0
-v = dict()
-for r in range(len(G)):
-    acc = ""
-    adj = False
-    s = set()
-    for c in range(len(G[0])):
-        if G[r][c].isdigit():
-            for slot in ul.padj8():
-                r2, c2 = slot
-                r2 += r
-                c2 += c
-                if r2 >= 0 and r2 < len(G) and c2 >= 0 and c2 < len(G[0]):
-                    if G[r2][c2] not in "1234567890.":
-                        adj = True
-            acc += G[r][c]
-            s.add((r,c))
-        else:
-            if len(acc) > 0 and adj:
-                S += int(acc)
-                for el in s:
-                    assert el not in v
-                    v[el] = (int(acc), GUID)
-                s.clear()
-            adj = False
-            acc = ""
-            GUID += 1
-    if len(acc) > 0 and adj:
-        S += int(acc)
-        for el in s:
-            assert el not in v
-            v[el] = (int(acc), GUID)
-        s.clear()
-    adj = False
-    acc = ""
+for r, c in ul.gridpoints(G):
+    if ul.gridcheck(G,r,c-1) and G[r][c-1].isdigit():
+        continue
+    if G[r][c].isdigit():
+        x = list(itertools.takewhile(lambda x: x.isdigit(), G[r][c:]))
+        num = int("".join(x))
+        def check():
+            for C in range(c, c+len(x)):
+                for i, j in ul.padj8():
+                    if ul.gridcheck(G,r+i,C+j) and G[r+i][C+j] not in "1234567890.":
+                        return True
+        if check(): S += num
 print(S)
 
 S = 0
-for r in range(len(G)):
-    for c in range(len(G[0])):
-        if G[r][c] == "*":
-            e = []
-            s = set()
-            for slot in ul.padj8():
-                r2, c2 = slot
-                x = (r + r2, c + c2)
-                if x[0] >= 0 and x[0] < len(G) and x[1] >= 0 and x[1] < len(G[0]):
-                    if x in v and v[x][1] not in s:
-                        e.append(v[x][0])
-                        s.add(v[x][1])
-            if len(e) == 2:
-                S += e[0] * e[1]
+for a, b in ul.gridpoints(G):
+    if G[a][b] != "*": continue
+    ns = set()
+    for x, y in ul.padj8():
+        r,c = a+x, b+y
+        if ul.gridcheck(G,r,c) and G[r][c].isdigit():
+            while c >= 0 and G[r][c].isdigit():
+                c -= 1
+            c += 1
+            x = list(itertools.takewhile(lambda x: x.isdigit(), G[r][c:]))
+            ns.add(int("".join(x)))
+    if len(ns) == 2:
+        S += math.prod(ns)
 print(S)
