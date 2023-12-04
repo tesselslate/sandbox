@@ -14,12 +14,17 @@ while F[-1] == "":
 G = ul.grid(F)
 
 S = 0
+D = dict()
+U = 0
 for r, c in ul.gridpoints(G):
     if ul.gridcheck(G,r,c-1) and G[r][c-1].isdigit():
         continue
     if G[r][c].isdigit():
         x = list(itertools.takewhile(lambda x: x.isdigit(), G[r][c:]))
         num = int("".join(x))
+        for i in range(len(x)):
+            D[(r,c+i)] = (num, U)
+        U += 1
         def check():
             for C in range(c, c+len(x)):
                 for i, j in ul.padj8():
@@ -29,17 +34,13 @@ for r, c in ul.gridpoints(G):
 print(S)
 
 S = 0
-for a, b in ul.gridpoints(G):
-    if G[a][b] != "*": continue
-    ns = set()
-    for x, y in ul.padj8():
-        r,c = a+x, b+y
-        if ul.gridcheck(G,r,c) and G[r][c].isdigit():
-            while c >= 0 and G[r][c].isdigit():
-                c -= 1
-            c += 1
-            x = list(itertools.takewhile(lambda x: x.isdigit(), G[r][c:]))
-            ns.add(int("".join(x)))
-    if len(ns) == 2:
-        S += math.prod(ns)
+for r, c in ul.gridpoints(G):
+    if G[r][c] == "*":
+        ns = dict()
+        for x, y in ul.padj8():
+            k = (r+x,c+y)
+            if k in D:
+                ns[D[k][1]] = D[k][0]
+        if len(ns.keys()) == 2:
+            S += math.prod(ns.values())
 print(S)
