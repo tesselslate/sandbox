@@ -50,6 +50,11 @@ def gridget(grid, r, c, default=None):
         return default
     return grid[r][c]
 
+def gridpoints(grid):
+    """Returns an iterator of (x,y) pairs representing points in the grid."""
+    for x in itertools.product(range(len(grid)), range(len(grid[0]))):
+        yield x
+
 def manhat(a, b):
     """Manhattan distance of two points stored as complex numbers."""
     return abs(a.real-b.real) + abs(a.imag-b.imag)
