@@ -12,24 +12,18 @@ while F[-1] == "":
     del F[-1]
 
 S = 0
-
 for l in F:
-    a = []
-    for c in l:
-        if c.isdigit(): a.append(c)
-    S += int(str(a[0]) + str(a[-1]))
+    v = [int(c) for c in l if c.isdigit()]
+    S += v[0] * 10 + v[-1]
 print(S)
 
-d = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-
+nums = "one two three four five six seven eight nine".split()
 S = 0
 for l in F:
-    a = []
+    v = []
     for i, c in enumerate(l):
-        if c.isdigit(): a.append(c)
-        for w in d:
-            if l[i:].startswith(w):
-                a.append(d.index(w) + 1)
-    v = int(str(a[0]) + str(a[-1]))
-    S += v
+        if c.isdigit(): v.append(int(c))
+        for j, nw in enumerate(nums):
+            if l[i:].startswith(nw): v.append(j+1)
+    S += v[0] * 10 + v[-1]
 print(S)
