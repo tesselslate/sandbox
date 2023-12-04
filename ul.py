@@ -6,6 +6,12 @@ sys.setrecursionlimit(10 ** 6)
 Helpers
 """
 
+def batched(xs, n):
+    assert n > 0
+    it = iter(xs)
+    while batch := tuple(itertools.islice(it, n)):
+        yield batch
+
 def itersplit(inp, delim):
     xs = []
     for x in inp:
