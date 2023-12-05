@@ -89,6 +89,22 @@ def padj4():
     return [(0,-1),(1,0),(0,1),(-1,0)]
 
 """
+N-dimensional functions
+"""
+
+def ndadj(n):
+    """Iterator of offsets directly adjacent to a given point in N-dimensional space"""
+    for p in itertools.product(*([range(-1,2)] * n)):
+        if p.count(0) == len(p) - 1:
+            yield p
+
+def ndadj_all(n):
+    """Iterator of offsets within 1 tile of a given point in N-dimensional space"""
+    for p in itertools.product(*([range(-1,2)] * n)):
+        if p.count(0) < len(p):
+            yield p
+
+"""
 Graph functions
 """
 
