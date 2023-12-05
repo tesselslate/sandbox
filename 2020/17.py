@@ -19,11 +19,9 @@ for x, y in ul.gridpoints(_G):
 
 def adjc(a,b,c,d):
     s = 0
-    for x,y,z,w in itertools.product(range(-1,2),range(-1,2),range(-1,2),range(-1,2)):
-        if x == y == z == w == 0:
-            continue
-        if (x+a,y+b,z+c,w+d) in G:
-            s += 1
+    for p in ul.ndadj_all(4):
+        x,y,z,w = p
+        if (x+a,y+b,z+c,w+d) in G: s += 1
     return s
 
 for _ in range(6):
@@ -32,10 +30,8 @@ for _ in range(6):
     V = set()
     for p in G:
         x,y,z,w = p
-        adj = []
-
-        for a,b,c,d in itertools.product(range(-1,2),range(-1,2),range(-1,2),range(-1,2)):
-            adj.append((a+x,b+y,c+z,d+w))
+        adj = [(0,0,0,0)] + list(ul.ndadj_all(4))
+        adj = [(x+p[0],y+p[1],z+p[2],w+p[3]) for p in adj]
 
         for p in adj:
             if p in V:

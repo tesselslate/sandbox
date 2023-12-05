@@ -22,12 +22,9 @@ def get(x,y,z):
 
 def adjc(a,b,c):
     s = 0
-    for z in range(-1, 2):
-        for x, y in ul.padj8():
-            if (a+x,b+y,c+z) in G:
-                s += 1
-    if (a,b,c-1) in G: s += 1
-    if (a,b,c+1) in G: s += 1
+    for p in ul.ndadj_all(3):
+        x, y, z = p
+        if (a+x,b+y,c+z) in G: s += 1
     return s
 
 for _ in range(6):
@@ -36,13 +33,8 @@ for _ in range(6):
     V = set()
     for p in G:
         x,y,z = p
-        adj = []
-        for z2 in range(-1, 2):
-            for x2, y2 in ul.padj8():
-                adj.append((x+x2,y+y2,z+z2))
-        adj.append((x,y,z-1))
-        adj.append((x,y,z+1))
-        adj.append((x,y,z))
+        adj = [(0,0,0)] + list(ul.ndadj_all(3))
+        adj = [(x+p[0],y+p[1],z+p[2]) for p in adj]
 
         for p in adj:
             if p in V:
