@@ -49,20 +49,14 @@ def ranges(k, rs):
             (s, e) = Q.popleft()
             d = dst-src
 
-            if e < src or s >= src + sz:
-                NQ.append((s,e))
-            elif s < src:
-                NQ.append((s,src))
-                if src <= e <= src + sz:
-                    nr.append((src+d,e+d))
-                else:
-                    NQ.append((src+sz, e))
-            elif e >= src + sz:
-                NQ.append((src+sz, e))
-                if src <= s < src + sz:
-                    nr.append((s+d,src+sz+d))
+            i = ul.range_intersect((s, e), (src, src+sz))
+            if i:
+                if s < src: NQ.append((s,src))
+                if e > src + sz: NQ.append((src+sz,e))
+                nr.append((i[0]+d,i[1]+d))
             else:
-                nr.append((s+d,e+d))
+                NQ.append((s,e))
+                continue
         Q = NQ
     return nr + list(NQ)
 
