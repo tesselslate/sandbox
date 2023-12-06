@@ -13,44 +13,67 @@ while F[-1] == "":
 F = ul.double_linefeed(F)
 
 seeds = [int(x) for x in F[0][0].split()[1:]]
-maps, rmaps = {}, {}
-fmap, rmap = {}, {}
+funcs = {}
+mapping = {}
 
-for l in F[1:]:
-    k1, k2 = ul.scan("%s-to-%s map:", l[0])
-    maps[k1] = []
-    rmaps[k2] = []
-    fmap[k1] = k2
-    rmap[k2] = k1
-    for l in l[1:]:
-        xs = [int(x) for x in l.split()]
-        maps[k1].append(xs)
-        rmaps[k2].append([xs[1], xs[0], xs[2]])
+for ls in F[1:]:
+    k1, k2 = ul.scan("%s-to-%s map:", ls[0])
+    mapping[k1] = k2
+    funcs[k1] = []
+    for l in ls[1:]:
+        # dst src sz
+        funcs[k1].append(tuple(int(x) for x in l.split()))
 
-M = 999999999999999
-for s in seeds:
-    S = s
-    p = "seed"
-    while p != "location":
-        for xs in maps[p]:
-            if xs[1] <= S <= xs[1]+xs[2]:
-                S = S - xs[1] + xs[0]
-                break
-        p = fmap[p]
-    if S < M:
-        M = S
+def apply(k, x):
+    for (dst, src, sz) in funcs[k]:
+        if src <= x < src + sz:
+            return x - src + dst
+    return x
+
+M = math.inf
+for seed in seeds:
+    k = "seed"
+    while k != "location":
+        seed = apply(k, seed)
+        k = mapping[k]
+    if seed < M:
+        M = seed
 print(M)
 
-for i in itertools.count():
-    S = i
-    p = "location"
-    while p != "seed":
-        for xs in rmaps[p]:
-            if xs[1] <= S < xs[1]+xs[2]:
-                S = S - xs[1] + xs[0]
-                break
-        p = rmap[p]
-    for x1, x2 in ul.batched(seeds, 2):
-        if x1 <= S < x1 + x2:
-            print(i)
-            exit()
+def ranges(k, rs):
+    nr = []
+    Q = deque(rs)
+    for (dst, src, sz) in funcs[k]:
+        NQ = deque()
+        while len(Q):
+            (s, e) = Q.popleft()
+            d = dst-src
+
+            if e < src or s >= src + sz:
+                NQ.append((s,e))
+            elif s < src:
+                NQ.append((s,src))
+                if src <= e <= src + sz:
+                    nr.append((src+d,e+d))
+                else:
+                    NQ.append((src+sz, e))
+            elif e >= src + sz:
+                NQ.append((src+sz, e))
+                if src <= s < src + sz:
+                    nr.append((s+d,src+sz+d))
+            else:
+                nr.append((s+d,e+d))
+        Q = NQ
+    return nr + list(NQ)
+
+M = math.inf
+for r in ul.batched(seeds, 2):
+    k = "seed"
+    r = [(r[0],r[0]+r[1])]
+    while k != "location":
+        r = ranges(k, r)
+        k = mapping[k]
+    v = min(r, key=lambda x: x[0])[0]
+    if v < M:
+        M = v
+print(M)
