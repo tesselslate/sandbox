@@ -70,3 +70,19 @@ for l in F:
     l = tokenize(l.replace(" ", ""))
     S += evaluate(l)
 print(S)
+
+class fakeint():
+    def __init__(self, x):
+        self.n = x
+    def __add__(self, x):
+        return fakeint(self.n * x.n)
+    def __mul__(self, x):
+        return fakeint(self.n + x.n)
+
+S = 0
+for l in F:
+    for i in range(10):
+        l = l.replace(str(i), f"fakeint({i})")
+    l = l.translate(str.maketrans("+*", "*+"))
+    S += eval(l).n
+print(S)
