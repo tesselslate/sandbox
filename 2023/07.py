@@ -11,99 +11,40 @@ F = [l.strip() for l in F]
 while F[-1] == "":
     del F[-1]
 
-S = 0
+def value(counter):
+    match list(sorted(c.values())):
+        case [5]:       return 10
+        case [1, 4]:    return 9
+        case [2, 3]:    return 8
+        case [1, 1, 3]: return 7
+        case [1, 2, 2]: return 6
+        case [1,1,1,2]: return 5
+        case _:         return 4
 
-def s1(a, b):
+H = []
+for l in F:
     cards = "23456789TJQKA"
-    counter = Counter()
-    c2 = []
-    for c in a:
-        counter[c] += 1
-        c2.append(cards.index(c))
-    c2 = tuple(c2)
-    v = list(counter.values())
-    v.sort()
-    if v == [5]:
-        return 10000, c2
-    elif v == [1, 4]:
-        return 5000, c2
-    elif v == [2, 3]:
-        return 3000, c2
-    elif v == [1, 1, 3]:
-        return 2000, c2
-    elif v == [1,2,2]:
-        return 1000, c2
-    elif v == [1,1,1,2]:
-        return 500, c2
-    elif len(v) == 5:
-        return 100, c2
-    else:
-        print(v, a, counter)
-        assert False
+    hand, bid = ul.scan("%s %d", l)
+    c = Counter(hand)
 
-def s2(a, b):
+    H.append((value(c), [cards.index(c) for c in hand], bid))
+S = sum((i+1) * x[2] for (i, x) in enumerate(sorted(H)))
+print(S)
+
+H = []
+for l in F:
     cards = "J23456789TQKA"
-    counter = Counter()
-    c2 = []
-    for c in a:
-        counter[c] += 1
-        c2.append(cards.index(c))
-    nj = counter["J"]
-    c2 = tuple(c2)
+    hand, bid = ul.scan("%s %d", l)
+    c = Counter(hand)
 
-    max = 0
-    card = a
-    for rep in cards[1:]:
-        def x():
-            a = card
-            a = a.replace("J", rep)
+    if c["J"] == 5:
+        H.append((10, [cards.index(c) for c in hand], bid))
+    else:
+        j = c["J"]
+        del c["J"]
+        x = c.most_common(1)[0][0]
+        c[x] += j
 
-            counter = Counter()
-            for c in a:
-                counter[c] += 1
-
-            v = list(counter.values())
-            v.sort()
-            if v == [5]:
-                return 10000
-            elif v == [1, 4]:
-                return 5000
-            elif v == [2, 3]:
-                return 3000
-            elif v == [1, 1, 3]:
-                return 2000
-            elif v == [1,2,2]:
-                return 1000
-            elif v == [1,1,1,2]:
-                return 500
-            elif len(v) == 5:
-                return 100
-            else:
-                print(v, a, counter)
-                assert False
-        v = x()
-        if v > max:
-            max = v
-    return max, c2
-
-S = []
-for l in F:
-    a, b = ul.scan("%s %d", l)
-    S.append((a,b))
-S.sort(key=lambda t: s1(t[0], t[1]))
-S.reverse()
-SUM = 0
-for i, x in enumerate(reversed(S)):
-    SUM += x[1] * (i + 1)
-print(SUM)
-
-S = []
-for l in F:
-    a, b = ul.scan("%s %d", l)
-    S.append((a,b))
-S.sort(key=lambda t: s2(t[0], t[1]))
-S.reverse()
-SUM = 0
-for i, x in enumerate(reversed(S)):
-    SUM += x[1] * (i + 1)
-print(SUM)
+        H.append((value(c), [cards.index(c) for c in hand], bid))
+S = sum((i+1) * x[2] for (i, x) in enumerate(sorted(H)))
+print(S)
