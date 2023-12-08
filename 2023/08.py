@@ -1,0 +1,56 @@
+import functools, math, re, string, sys, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
+
+if len(sys.argv) > 1:
+    F = open(sys.argv[1])
+else:
+    F = sys.stdin.readlines()
+
+F = [l.strip() for l in F]
+while F[-1] == "":
+    del F[-1]
+
+inputs = F[0]
+
+S = 0
+
+I = {}
+for l in F[2:]:
+    a, b, c = ul.scan("%s = (%s, %s)", l)
+    I[a] = (b,c)
+
+spot = "AAA"
+i = 0
+while spot != "ZZZ":
+    instr = inputs[i%len(inputs)]
+    if instr == "L":
+        spot = I[spot][0]
+    else:
+        spot = I[spot][1]
+    i += 1
+print(i)
+
+Q = []
+for k in I.keys():
+    if k.endswith("A"): Q.append(k)
+
+cycles = {}
+
+i = 0
+while len(cycles) < 6:
+    NQ = []
+    while len(Q):
+        E = Q.pop()
+        if E.endswith("Z"):
+            if E not in cycles:
+                cycles[E] = i
+
+        spot = I[E]
+        if inputs[i%len(inputs)] == "L":
+            NQ.append(spot[0])
+        else:
+            NQ.append(spot[1])
+    Q = NQ
+    i += 1
+print(math.lcm(*cycles.values()))
