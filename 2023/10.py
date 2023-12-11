@@ -11,18 +11,14 @@ F = [l.strip() for l in F]
 while F[-1] == "":
     del F[-1]
 G = ul.grid(F)
-G3 = ul.grid(F)
-
-S = 0
-M = 0
 
 sr, sc = 0, 0
 D = defaultdict(dict)
 valid = {
-    (1,0): ["L", "J", "|", "S"],
-    (-1,0): ["F", "7", "|", "S"],
-    (0,1): ["-", "7", "J", "S"],
-    (0,-1): ["-", "F", "L", "S"],
+    (1,0): "LJ|S",
+    (-1,0): "F7|S",
+    (0,1): "-7JS",
+    (0,-1): "-FLS",
 }
 adj = {
     "-": [(0,1),(0,-1)],
@@ -48,83 +44,38 @@ for (r, c) in ul.gridpoints(G):
             D[(r,c)][(rr,cc)] = True
         if G[rr][cc] == "S":
             D[(rr,cc)][(r,c)] = True
-print(sr, sc)
+for k, v in adj.items():
+    v1 = list([(k[0]-sr,k[1]-sc) for k in D[(sr,sc)].keys()])
+    v1.sort()
+    v2 = list(v)
+    v2.sort()
+    if v1 == v2:
+        G[sr][sc] = k
 
 M = 0
 Q = deque([(sr, sc, 0)])
-MIN = {}
-VL = set()
+V = {}
 while len(Q):
     E = Q.popleft()
     k = (E[0], E[1])
-    assert G[E[0]][E[1]] != "."
-    if k in MIN and MIN[k] < E[2]:
+    if k in V and V[k] < E[2]:
         continue
-    MIN[k] = E[2]
+    V[k] = E[2]
     (r, c, dist) = E
-    VL.add((r,c))
     if dist > M:
         M = dist
-    for k2 in D[k].keys():
-        Q.append((k2[0], k2[1], dist+1))
+    for k in D[k].keys():
+        Q.append((*k, dist+1))
 print(M)
 
-G[sr][sc] = "L"
-X = [[0 for _ in range(len(G) * 3)] for _ in range(len(G) * 3)]
-for (r, c) in ul.gridpoints(G):
-    xr = r * 3
-    xc = c * 3
-    match G[r][c]:
-        case "|":
-            X[xr][xc+1] = 1
-            X[xr+1][xc+1] = 1
-            X[xr+2][xc+1] = 1
-        case "-":
-            X[xr+1][xc] = 1
-            X[xr+1][xc+1] = 1
-            X[xr+1][xc+2] = 1
-        case "7":
-            X[xr+1][xc] = 1
-            X[xr+1][xc+1] = 1
-            X[xr+2][xc+1] = 1
-        case "F":
-            X[xr+1][xc+1] = 1
-            X[xr+1][xc+2] = 1
-            X[xr+2][xc+1] = 1
-        case "L":
-            X[xr][xc+1] = 1
-            X[xr+1][xc+1] = 1
-            X[xr+1][xc+2] = 1
-        case "J":
-            X[xr][xc+1] = 1
-            X[xr+1][xc+1] = 1
-            X[xr+1][xc] = 1
-        case _: pass
-
-for (r,c) in ul.gridpoints(X):
-    if not (r == 0 or c == 0 or r == len(X) - 1 or c == len(X) - 1): continue
-    Q = deque([(r,c)])
-    while len(Q):
-        (r,c) = Q.popleft()
-        if X[r][c] != 0: continue
-        X[r][c] = 2
-        for (rr,cc) in ul.padj4():
-            rr += r
-            cc += c
-            if ul.gridcheck(X,rr,cc):
-                Q.append((rr,cc))
 S = 0
-for (r,c) in ul.gridpoints(G):
-    if (r,c) in VL: continue
-    s = set()
-    for i in range(3):
-        for j in range(3):
-            s.add(X[r*3+i][c*3+j])
-    if 2 not in s: S += 1
-
-for r in range(len(X)):
-    x = ""
-    for c in range(len(X)):
-        x += "$#."[X[r][c]]
-    print(x)
+for (r, c) in ul.gridpoints(G):
+    if (r,c) in V:
+        continue
+    s = 0
+    while ul.gridcheck(G,r,c):
+        if (r,c) in V and G[r][c] not in "7L": s += 1
+        r -= 1
+        c -= 1
+    if s % 2 == 1: S += 1
 print(S)
