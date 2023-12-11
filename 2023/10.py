@@ -72,10 +72,6 @@ S = 0
 for (r, c) in ul.gridpoints(G):
     if (r,c) in V:
         continue
-    s = 0
-    while ul.gridcheck(G,r,c):
-        if (r,c) in V and G[r][c] not in "7L": s += 1
-        r -= 1
-        c -= 1
+    s = len([x for (i, x) in enumerate(G[r][:c]) if (r,i) in V and x in "|LJ"])
     if s % 2 == 1: S += 1
 print(S)
