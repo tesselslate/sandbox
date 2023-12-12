@@ -42,6 +42,10 @@ def cw(x):
     """Rotate 2d point (complex) clockwise around the origin"""
     return x * 1j
 
+def gcol(grid, col):
+    """Returns a column from a grid. Elements are copied."""
+    return [grid[row][col] for row in range(len(grid))]
+
 def grid(inp, func=None):
     """Creates a grid from an input (list of strings). Runs the provided function on each character."""
     if not func:
@@ -51,12 +55,6 @@ def grid(inp, func=None):
 def gridcheck(grid, r, c):
     """Checks if r,c is in bounds."""
     return r >= 0 and r < len(grid) and c >=0 and c < len(grid[0])
-
-def gridget(grid, r, c, default=None):
-    """Gets the element at r,c or returns the default"""
-    if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[0]):
-        return default
-    return grid[r][c]
 
 def gridpoints(grid):
     """Returns an iterator of (x,y) pairs representing points in the grid."""
@@ -151,10 +149,6 @@ def halves(x):
     l = len(x)
     assert l % 2 == 0
     return x[:l//2], x[l//2:]
-
-def ints(inp):
-    """Return all ints in the given string in a list."""
-    return [int(x) for x in re.findall(r'\d+', inp)]
 
 def scan(fmt, inp):
     """
