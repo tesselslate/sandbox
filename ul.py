@@ -22,6 +22,9 @@ def itersplit(inp, delim):
             xs += [x]
     yield xs
 
+def minmax(a, b):
+    return min(a, b), max(a, b)
+
 
 def range_intersect(a, b):
     x = (max(a[0], b[0]), min(a[1], b[1]))
