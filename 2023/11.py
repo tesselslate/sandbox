@@ -13,7 +13,7 @@ while F[-1] == "":
 G = ul.grid(F)
 
 RR = {r for r in range(len(G)) if G[r].count(".") == len(G[r])}
-CC = {c for c in range(len(G)) if set(G[r][c] for r in range(len(G))) == {"."}}
+CC = {c for c in range(len(G)) if ul.gcol(G, c).count(".") == len(G)}
 
 galaxies = [(r,c) for (r,c) in ul.gridpoints(G) if G[r][c] == "#"]
 
