@@ -13,7 +13,6 @@ while F[-1] == "":
 
 times = ul.ints(F[0])
 distances = ul.ints(F[1])
-S = 0
 
 def sim(t, md):
     v = 0

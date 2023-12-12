@@ -13,8 +13,6 @@ while F[-1] == "":
 
 inputs = F[0]
 
-S = 0
-
 I = {}
 for l in F[2:]:
     a, b, c = ul.scan("%s = (%s, %s)", l)

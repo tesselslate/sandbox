@@ -14,7 +14,6 @@ while F[-1] == "":
 F = [[int(y) for y in x.split()] for x in F]
 
 S = 0
-
 for l in F:
     histories = [l.copy()]
     while not all(x == 0 for x in histories[-1]):
