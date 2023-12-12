@@ -12,35 +12,34 @@ while F[-1] == "":
     del F[-1]
 
 G = ul.grid(F)
+GG = defaultdict(list)
 
 S = 0
-D = dict()
-U = 0
-for r, c in ul.gridpoints(G):
-    if ul.gridcheck(G,r,c-1) and G[r][c-1].isdigit():
+for (r,c) in ul.gridpoints(G):
+    if ul.gridcheck(G,r,c-1) and G[r][c].isdigit() and G[r][c-1].isdigit():
         continue
-    if G[r][c].isdigit():
-        x = list(itertools.takewhile(lambda x: x.isdigit(), G[r][c:]))
-        num = int("".join(x))
-        for i in range(len(x)):
-            D[(r,c+i)] = (num, U)
-        U += 1
-        def check():
-            for C in range(c, c+len(x)):
-                for i, j in ul.padj8():
-                    if ul.gridcheck(G,r+i,C+j) and G[r+i][C+j] not in "1234567890.":
-                        return True
-        if check(): S += num
+
+    acc = ""
+    gears = set()
+    sym = False
+    while ul.gridcheck(G,r,c) and G[r][c].isdigit():
+        for (rr,cc) in ul.padj8():
+            rr += r
+            cc += c
+            if ul.gridcheck(G,rr,cc):
+                if G[rr][cc] not in "1234567890.":
+                    sym = True
+                if G[rr][cc] == "*":
+                    gears.add((rr,cc))
+        acc += G[r][c]
+        c += 1
+    if sym:
+        S += int(acc)
+    for gear in gears:
+        GG[gear].append(int(acc))
 print(S)
 
 S = 0
-for r, c in ul.gridpoints(G):
-    if G[r][c] == "*":
-        ns = dict()
-        for x, y in ul.padj8():
-            k = (r+x,c+y)
-            if k in D:
-                ns[D[k][1]] = D[k][0]
-        if len(ns.keys()) == 2:
-            S += math.prod(ns.values())
+for gear in GG.values():
+    if len(gear) == 2: S += math.prod(gear)
 print(S)
