@@ -153,6 +153,12 @@ def halves(x):
     assert l % 2 == 0
     return x[:l//2], x[l//2:]
 
+def input():
+    F = [l.strip() for l in sys.stdin.readlines()]
+    while F[-1] == "":
+        del F[-1]
+    return F
+
 def scan(fmt, inp):
     """
     Basic sscanf copycat for quick input parsing.
