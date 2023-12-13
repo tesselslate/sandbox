@@ -1,15 +1,7 @@
-import functools, math, re, string, sys, itertools, ul
-from dataclasses import dataclass
-from collections import Counter, defaultdict, deque
+import ul
+from collections import defaultdict, deque
 
-if len(sys.argv) > 1:
-    F = open(sys.argv[1])
-else:
-    F = sys.stdin.readlines()
-
-F = [l.strip() for l in F]
-while F[-1] == "":
-    del F[-1]
+F = ul.input()
 G = ul.grid(F)
 
 sr, sc = 0, 0

@@ -1,18 +1,9 @@
-import functools, math, re, string, sys, itertools, ul
-from dataclasses import dataclass
-from collections import Counter, defaultdict, deque
+import math, ul
 
-if len(sys.argv) > 1:
-    F = open(sys.argv[1])
-else:
-    F = sys.stdin.readlines()
+F = ul.input()
 
-F = [l.strip() for l in F]
-while F[-1] == "":
-    del F[-1]
-
-times = ul.ints(F[0])
-distances = ul.ints(F[1])
+times = [int(x) for x in F[0].split() if x.isdigit()]
+distances = [int(x) for x in F[1].split() if x.isdigit()]
 
 def sim(t, md):
     v = 0

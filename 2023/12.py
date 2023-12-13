@@ -1,37 +1,12 @@
-import functools, math, re, string, sys, itertools, ul
-from dataclasses import dataclass
-from collections import Counter, defaultdict, deque
+import functools, ul
 
-if len(sys.argv) > 1:
-    F = open(sys.argv[1])
-else:
-    F = sys.stdin.readlines()
+F = ul.input()
 
-F = [l.strip() for l in F]
-while F[-1] == "":
-    del F[-1]
-
-S = 0
-
-F2 = []
-for l in F:
+def proc(l):
     a, b = ul.scan("%s %s", l)
     xs = [int(x.strip()) for x in b.split(",")]
-    F2.append((a,xs))
-F = F2
-
-# naive
-# S = 0
-# for (scan, nums) in F:
-#     indices = [x for x in range(len(scan)) if scan[x] == "?"]
-#     scan = list(scan)
-#     for xs in itertools.product("#.", repeat=len(indices)):
-#         for i, x in enumerate(xs):
-#             scan[indices[i]] = x
-#
-#         groups = [len(list(x)) for (c, x) in itertools.groupby(scan) if c == "#"]
-#         if groups == nums: S += 1
-# print(S)
+    return (a, xs)
+F = [proc(l) for l in F]
 
 @functools.cache
 def solve(s_idx, d_idx, prev):

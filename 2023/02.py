@@ -1,15 +1,7 @@
-import functools, math, re, string, sys, itertools, ul
-from dataclasses import dataclass
-from collections import Counter, defaultdict, deque
+import math, ul
+from collections import defaultdict
 
-if len(sys.argv) > 1:
-    F = open(sys.argv[1])
-else:
-    F = sys.stdin.readlines()
-
-F = [l.strip() for l in F]
-while F[-1] == "":
-    del F[-1]
+F = ul.input()
 
 S, S2 = 0, 0
 for l in F:
@@ -24,4 +16,5 @@ for l in F:
         cubes[nt] = max(cubes[nt], nc)
     if pos: S += n
     S2 += math.prod(cubes.values())
-print(S, S2)
+print(S)
+print(S2)
