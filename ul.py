@@ -31,7 +31,7 @@ def range_intersect(a, b):
     return x if x[0] <= x[1] else None
 
 def transpose(xs):
-    return [list(x) for x in zip(*xs)]
+    return [*map(list, zip(*xs))]
 
 """
 2D functions
