@@ -15,46 +15,51 @@ G = [ul.grid(g) for g in F]
 
 S = 0
 
-def pgrid(g):
-    for r in g:
-        print("".join(r))
+def check(g, r):
+    n = min(r, len(g)-r)
+    a = g[r-n:r]
+    b = g[r:r+n]
+    assert len(a) == len(b)
+    assert len(a[0]) == len(b[0])
+    b.reverse()
+    return a == b
 
-def check_vert(g, c):
-    a = [g[r][:c] for r in range(len(g))]
-    b = [g[r][c:] for r in range(len(g))]
-    l = a if len(a[0]) > len(b[0]) else b
-    s = a if len(a[0]) < len(b[0]) else b
-    d = len(l[0]) - len(s[0])
-    s = [list(reversed(r)) for r in s]
-    for r in range(len(s)):
-        for c in range(len(s[0])):
-            if l[r][d+c] != s[r][c]: return False
-    return True
-
-def check_horiz(g, r):
-    a = g[:r]
-    b = g[r:]
-    l = a if len(a) > len(b) else b
-    s = a if len(a) < len(b) else b
-    d = len(l) - len(s)
-    s.reverse()
-    for r in range(len(s)):
-        for c in range(len(g[0])):
-            if l[r+d][c] != s[r][c]: return False
-    return True
-
-S = 0
+V = []
 for g in G:
-    for i in range(1, len(g[0])):
-        if check_vert(g, i):
-            print("vert",i)
-            S += i
+    for i in range(1,len(g)):
+        if check(g, i):
+            S += i * 100
+            V.append((i,"v"))
             break
     else:
-        for i in range(1, len(g)):
-            if check_horiz(g, i):
-                print("horiz 100", i)
-                S += i * 100
+        for i in range(1,len(g[0])):
+            if check(ul.transpose(g), i):
+                S += i
+                V.append((i,"h"))
                 break
-        else: assert False
+        else:
+            assert False
+print(S)
+
+S = 0
+for (g, valid) in zip(G, V):
+    for (r,c) in ul.gridpoints(g):
+        g[r][c] = "." if g[r][c] == "#" else "#"
+        v = []
+        for i in range(1, len(g)):
+            if check(g, i):
+                v.append((i,"v"))
+        for i in range(1,len(g[0])):
+            if check(ul.transpose(g), i):
+                v.append((i,"h"))
+        go = False
+        g[r][c] = "." if g[r][c] == "#" else "#"
+        if len(v):
+            v = [x for x in v if x != valid]
+            if len(v) == 1:
+                v = v[0]
+                S += v[0] * (1 if v[1] == "h" else 100)
+                go = True
+        if go: break
+    else: assert False
 print(S)
