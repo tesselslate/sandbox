@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::io::{self, Read};
+use std::time::Instant;
 
 type EmptyResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -22,8 +23,11 @@ fn main() -> EmptyResult {
 
     let entries: Vec<Entry> = parse(&input);
 
+    let now = Instant::now();
     part1(&entries)?;
     part2(&entries)?;
+    let duration = Instant::now().duration_since(now);
+    println!("{} ms", duration.as_millis());
 
     Ok(())
 }
@@ -54,7 +58,24 @@ fn parse(input: &String) -> Vec<Entry> {
 }
 
 fn part1(input: &Vec<Entry>) -> EmptyResult {
-    println!("{}", solve_naive(input));
+    let ans: usize = input
+        .iter()
+        .map(|entry| {
+            let mut memo = HashMap::new();
+            let v = combinations(
+                &mut memo,
+                entry,
+                State {
+                    spring_idx: 0,
+                    damage_idx: 0,
+                    prev_damaged: 0,
+                },
+            );
+            v
+        })
+        .sum();
+    println!("{}", ans);
+
     Ok(())
 }
 
@@ -74,7 +95,6 @@ fn part2(input: &Vec<Entry>) -> EmptyResult {
                     prev_damaged: 0,
                 },
             );
-            println!("- {}", v);
             v
         })
         .sum();
@@ -196,7 +216,7 @@ fn preprocess_p2(input: &Vec<Entry>) -> Vec<Entry> {
     input
 }
 
-fn solve_naive(input: &Vec<Entry>) -> usize {
+fn _solve_naive(input: &Vec<Entry>) -> usize {
     input
         .iter()
         .map(|entry| {
