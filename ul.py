@@ -30,6 +30,9 @@ def range_intersect(a, b):
     x = (max(a[0], b[0]), min(a[1], b[1]))
     return x if x[0] <= x[1] else None
 
+def transpose(xs):
+    return [list(x) for x in zip(*xs)]
+
 """
 2D functions
 """
