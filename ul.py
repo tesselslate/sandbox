@@ -7,12 +7,14 @@ Helpers
 """
 
 def batched(xs, n):
+    """Returns tuples of size `n` from the iterator `xs`."""
     assert n > 0
     it = iter(xs)
     while batch := tuple(itertools.islice(it, n)):
         yield batch
 
 def itersplit(inp, delim):
+    """Returns lists of values from the given iterator `inp` separated by the value `delim`."""
     xs = []
     for x in inp:
         if x == delim:
@@ -22,15 +24,17 @@ def itersplit(inp, delim):
             xs += [x]
     yield xs
 
-def minmax(a, b):
-    return min(a, b), max(a, b)
-
+def minmax(*xs):
+    """Returns the minimum and maximum of the given values."""
+    return min(xs), max(xs)
 
 def range_intersect(a, b):
+    """Returns the intersection of the given (start, stop) tuples, or None if none exists."""
     x = (max(a[0], b[0]), min(a[1], b[1]))
     return x if x[0] <= x[1] else None
 
 def transpose(xs):
+    """Transposes the given 2D list (or other similar structure.) Returns a 2D list."""
     return [*map(list, zip(*xs))]
 
 """
@@ -60,14 +64,35 @@ def manhat(a, b):
     """Manhattan distance of two points stored as complex numbers."""
     return abs(a.real-b.real) + abs(a.imag-b.imag)
 
-def dirs():
-    return "NESW"
-
 EAST = 1
 
 """
 2D (integer point) functions
 """
+
+def dirs_rc(inp):
+    """Returns a list of 2d offsets based on the given list of inputs (WSEN, LDRU)"""
+    m = {
+            "W": 0, "L": 0,
+            "S": 1, "D": 1,
+            "E": 2, "R": 2,
+            "N": 3, "U": 3,
+    }
+    return [padj4()[m[c]] for c in inp]
+
+def dirs_xy(inp):
+    """Returns a list of 2d offsets based on the given list of inputs (NESW, URDL)"""
+    m = {
+            "N": 0, "U": 0,
+            "E": 1, "R": 1,
+            "S": 2, "D": 2,
+            "W": 3, "L": 3,
+    }
+    return [padj4()[m[c]] for c in inp]
+
+def padj4():
+    """All 4 2d adjacent offsets (x,y tuples)"""
+    return [(0,-1),(1,0),(0,1),(-1,0)]
 
 def padj8():
     """All 8 2d adjacent offsets (x,y tuples)"""
@@ -80,10 +105,6 @@ def pccw(x, y):
 def pcw(x, y):
     """Rotate 2d point (integers) clockwise around the origin"""
     return -y, x
-
-def padj4():
-    """All 4 2d adjacent offsets (x,y tuples)"""
-    return [(0,-1),(1,0),(0,1),(-1,0)]
 
 """
 N-dimensional functions
@@ -193,3 +214,7 @@ def scan(fmt, inp):
         if typ == 'x':
             out.append(int(content, 16))
     return out
+
+if __name__ == "__main__":
+    # TODO: test
+    pass
