@@ -37,14 +37,6 @@ def transpose(xs):
 2D functions
 """
 
-def ccw(x):
-    """Rotate 2d point (complex) counter-clockwise around the origin"""
-    return x * -1j
-
-def cw(x):
-    """Rotate 2d point (complex) clockwise around the origin"""
-    return x * 1j
-
 def gcol(grid, col):
     """Returns a column from a grid. Elements are copied."""
     return [grid[row][col] for row in range(len(grid))]
@@ -67,10 +59,6 @@ def gridpoints(grid):
 def manhat(a, b):
     """Manhattan distance of two points stored as complex numbers."""
     return abs(a.real-b.real) + abs(a.imag-b.imag)
-
-def rots():
-    """All 2d rotations (multiply)"""
-    return [1, -1, 1j, -1j]
 
 def dirs():
     return "NESW"
