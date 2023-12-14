@@ -37,6 +37,53 @@ def transpose(xs):
     """Transposes the given 2D list (or other similar structure.) Returns a 2D list."""
     return [*map(list, zip(*xs))]
 
+class periodic():
+    """Takes a periodic sequence as input and provides functions to operate on it."""
+
+    xs: list
+    V: collections.defaultdict[list]
+    cycle_len: int | None = None
+    cycle_start: int | None = None
+
+    def __init__(self, *xs):
+        self.xs = list()
+        self.V = collections.defaultdict(list)
+        for x in xs:
+            self.append(x)
+
+    def __len__(self):
+        return len(self.xs)
+
+    def __getitem__(self, k):
+        if k < self.cycle_start:
+            return self.xs[k]
+
+        cl, cs = self.cycle_len, self.cycle_start
+        return self.xs[cs+(k-cs)%cl-1]
+
+    def append(self, x):
+        i = len(self.xs)
+        if x in self.V:
+            cl = i - self.V[x][-1]
+            if self.cycle_len:
+                assert self.cycle_len == cl
+            else:
+                self.cycle_start = self.V[x][-1]
+                self.cycle_len = cl
+
+        self.V[x].append(i)
+        self.xs.append(x)
+
+    def has_cycle(self):
+        return bool(self.cycle_len)
+
+    def period(self):
+        if not self.cycle_len: raise Exception("no cycle found yet")
+        return self.xs[self.cycle_start:self.cycle_start+self.cycle_len]
+
+    def period_length(self):
+        return self.cycle_len
+
 """
 2D functions
 """
