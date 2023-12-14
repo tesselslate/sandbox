@@ -44,31 +44,32 @@ if day is None:
 padded_day = str(day).zfill(2)
 
 
-def run_solution(input_file, solution_name=padded_day, prologue=False):
-    if prologue:
-        print(f"Running input: {input_file}")
-    print(f"Started at: {ctime()}")
-    print()
+def run_solution(input_file, solution_name=padded_day, output=True):
+    if output:
+        print(f"Started at: {ctime()}")
+        print()
+        print("\x1b[1;32m  -- stdout\x1b[0m")
 
     process = subprocess.Popen(
-        ["pypy3", f"{solution_name}.py"], stdout=PIPE, stdin=PIPE, stderr=PIPE
+        ["pypy3", f"{solution_name}.py"],
+        stdout=sys.stdout if output else PIPE,
+        stdin=PIPE,
+        stderr=PIPE,
     )
+
     with open(input_file, "r") as file:
         start = time()
-        stdout, stderr = process.communicate(input=bytes(file.read(), "utf8"))
+        _, stderr = process.communicate(input=bytes(file.read(), "utf8"))
         stop = time()
 
-        if stdout:
-            stdout = stdout.decode("utf8")
-            print(f"\x1b[1;32m  -- stdout\n\x1b[0m{stdout}\x1b[1;32m  --\x1b[0m\n")
-        if stderr:
-            stderr = stderr.decode("utf8")
-            print(
-                f"\x1b[1;31m  -- stderr\x1b[0m\x1b[31m\n{stderr}\x1b[1;31m  --\x1b[0m\n"
-            )
-        if stdout and stderr:
-            print("\x1b[90m  (had stdout and stderr)\x1b[0m")
-        print(f"  took {(stop-start):.3f} sec\n")
+        if output:
+            print("\x1b[1;32m  --\x1b[0m\n")
+            if stderr:
+                stderr = stderr.decode("utf8")
+                print(
+                    f"\x1b[1;31m  -- stderr\x1b[0m\x1b[31m\n{stderr}\x1b[1;31m  --\x1b[0m\n"
+                )
+            print(f"  took {(stop-start):.3f} sec\n")
 
         return not bool(stderr)
 
@@ -137,7 +138,8 @@ match mode:
             "\x1b[1;36m  ---------------------------------------------------------\x1b[0m\n"
         )
         for test in tests:
-            results.append(run_solution(test, prologue=True))
+            print(f"Running input:", test)
+            results.append(run_solution(test))
             print(
                 "\x1b[1;36m  ---------------------------------------------------------\x1b[0m\n"
             )
@@ -153,7 +155,7 @@ match mode:
             )
             for i, result in enumerate(results):
                 print(
-                    f"\x1b{'[1;32mOK  ' if result else '[1;31mFAIL'}  \x1b[0mTest {i+1}"
+                    f"\x1b{'[1;32m  OK  ' if result else '[1;31m  FAIL'} \x1b[0mTest {i+1}"
                 )
 
     case Mode.TESTL:
@@ -170,8 +172,6 @@ match mode:
             sorted([name for name in os.listdir() if re.match(r"(\d+).py", name)])
         )
 
-        sys.stdout = open(os.devnull, "w")
-
         times = []
         ok = []
         start = time()
@@ -179,7 +179,9 @@ match mode:
             day = solution.split(".")[0]
             sol_start = time()
             ok.append(
-                run_solution(f"inputs/{day.zfill(2)}", solution_name=day.zfill(2))
+                run_solution(
+                    f"inputs/{day.zfill(2)}", solution_name=day.zfill(2), output=False
+                )
             )
             sol_stop = time()
             times.append(sol_stop - sol_start)
