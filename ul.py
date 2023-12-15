@@ -108,8 +108,8 @@ def gridpoints(grid):
         yield x
 
 def manhat(a, b):
-    """Manhattan distance of two points stored as complex numbers."""
-    return abs(a.real-b.real) + abs(a.imag-b.imag)
+    """Manhattan distance of two points."""
+    return abs(a[0]-b[0]) + abs(a[1]-b[1])
 
 EAST = 1
 
