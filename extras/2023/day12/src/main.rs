@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use hashbrown::HashMap;
 use std::io::{self, Read};
 use std::time::Instant;
 
@@ -14,7 +14,7 @@ enum Spring {
 #[derive(Clone)]
 struct Entry {
     springs: Vec<Spring>,
-    damaged: Vec<u16>,
+    damaged: Vec<u8>,
 }
 
 fn main() -> EmptyResult {
@@ -27,7 +27,7 @@ fn main() -> EmptyResult {
     part1(&entries)?;
     part2(&entries)?;
     let duration = Instant::now().duration_since(now);
-    println!("{} ms", duration.as_millis());
+    println!("{} us", duration.as_micros());
 
     Ok(())
 }
@@ -50,7 +50,7 @@ fn parse(input: &String) -> Vec<Entry> {
         let damaged = b
             .split(',')
             .map(|num| num.parse().unwrap())
-            .collect::<Vec<u16>>();
+            .collect::<Vec<u8>>();
         out.push(Entry { springs, damaged });
     }
 
@@ -82,10 +82,10 @@ fn part1(input: &Vec<Entry>) -> EmptyResult {
 fn part2(input: &Vec<Entry>) -> EmptyResult {
     let input = preprocess_p2(input);
 
+    let mut memo = HashMap::new();
     let ans: usize = input
         .iter()
         .map(|entry| {
-            let mut memo = HashMap::new();
             let v = combinations(
                 &mut memo,
                 entry,
@@ -95,6 +95,7 @@ fn part2(input: &Vec<Entry>) -> EmptyResult {
                     prev_damaged: 0,
                 },
             );
+            memo.clear();
             v
         })
         .sum();
@@ -105,9 +106,9 @@ fn part2(input: &Vec<Entry>) -> EmptyResult {
 
 #[derive(Hash, PartialEq, Eq, Copy, Clone)]
 struct State {
-    spring_idx: usize,
-    damage_idx: usize,
-    prev_damaged: u16,
+    spring_idx: u8,
+    damage_idx: u8,
+    prev_damaged: u8,
 }
 
 fn combinations(memo: &mut HashMap<State, usize>, input: &Entry, mut state: State) -> usize {
@@ -117,14 +118,14 @@ fn combinations(memo: &mut HashMap<State, usize>, input: &Entry, mut state: Stat
 
     let state_copy = state;
 
-    while state.spring_idx < input.springs.len()
-        && input.springs[state.spring_idx] != Spring::Unknown
+    while state.spring_idx < input.springs.len() as u8
+        && input.springs[state.spring_idx as usize] != Spring::Unknown
     {
-        match input.springs[state.spring_idx] {
+        match input.springs[state.spring_idx as usize] {
             Spring::Operational => {
                 if state.prev_damaged > 0 {
-                    if state.damage_idx == input.damaged.len()
-                        || input.damaged[state.damage_idx] != state.prev_damaged
+                    if state.damage_idx == input.damaged.len() as u8
+                        || input.damaged[state.damage_idx as usize] != state.prev_damaged
                     {
                         return 0;
                     }
@@ -139,16 +140,16 @@ fn combinations(memo: &mut HashMap<State, usize>, input: &Entry, mut state: Stat
         }
         state.spring_idx += 1;
     }
-    if state.spring_idx == input.springs.len() {
+    if state.spring_idx == input.springs.len() as u8 {
         if state.prev_damaged > 0 {
-            if state.damage_idx == input.damaged.len()
-                || input.damaged[state.damage_idx] != state.prev_damaged
+            if state.damage_idx == input.damaged.len() as u8
+                || input.damaged[state.damage_idx as usize] != state.prev_damaged
             {
                 return 0;
             }
         }
 
-        return if state.damage_idx == input.damaged.len() {
+        return if state.damage_idx == input.damaged.len() as u8 {
             1
         } else {
             0
@@ -167,8 +168,8 @@ fn combinations(memo: &mut HashMap<State, usize>, input: &Entry, mut state: Stat
 
     // operational
     let new_state = if state.prev_damaged > 0 {
-        if state.damage_idx == input.damaged.len()
-            || input.damaged[state.damage_idx] != state.prev_damaged
+        if state.damage_idx == input.damaged.len() as u8
+            || input.damaged[state.damage_idx as usize] != state.prev_damaged
         {
             None
         } else {
@@ -228,7 +229,7 @@ fn _solve_naive(input: &Vec<Entry>) -> usize {
                 .map(|(i, _)| i)
                 .collect();
             let mut springs = entry.springs.clone();
-            let mut counts: Vec<u16> = Vec::with_capacity(entry.damaged.len());
+            let mut counts: Vec<u8> = Vec::with_capacity(entry.damaged.len());
             (0..1 << indices.len())
                 .filter(|unknown_key| {
                     for i in 0..indices.len() {
@@ -241,7 +242,7 @@ fn _solve_naive(input: &Vec<Entry>) -> usize {
                     }
 
                     counts.clear();
-                    let mut count = 0u16;
+                    let mut count = 0u8;
                     for spring in &springs {
                         match *spring {
                             Spring::Damaged => count += 1,
