@@ -1,4 +1,4 @@
-import collections, itertools, re, sys
+import collections, heapq, itertools, re, sys
 
 sys.setrecursionlimit(10 ** 6)
 
@@ -83,6 +83,46 @@ class periodic():
 
     def period_length(self):
         return self.cycle_len
+
+class pq():
+    """Provides a basic priority queue implementation wrapping heapq."""
+
+    def __init__(self, q=[]):
+        if type(q) == tuple:
+            print("WARNING - pq received tuple, implicitly converting to list")
+            self.q = [q]
+        else:
+            assert type(q) == list
+            self.q = q
+            heapq.heapify(self.q)
+
+    def __bool__(self):
+        return bool(self.q)
+
+    def __getitem__(self, k):
+        return self.q[k]
+
+    def __len__(self):
+        return len(self.q)
+
+    def clear(self):
+        self.q.clear()
+
+    def extend(self, *xs):
+        for x in xs:
+            heapq.heappush(self.q, x)
+
+    def pop(self):
+        return heapq.heappop(self.q)
+
+    def push(self, x):
+        heapq.heappush(self.q, x)
+
+    def smallest(self, n=1):
+        return heapq.nsmallest(n, self.q)
+
+    def largest(self, n=1):
+        return heapq.nlargest(n, self.q)
 
 """
 2D functions
