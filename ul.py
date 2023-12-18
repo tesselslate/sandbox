@@ -3,6 +3,14 @@ import collections, heapq, itertools, re, sys
 sys.setrecursionlimit(10 ** 6)
 
 """
+Math
+"""
+
+def shoelace(points) -> float:
+    """Calculates the area of a simple polygon provided a list of (x,y) tuples."""
+    return abs(sum((x1*y2)-(x2*y1) for ((x1, y1), (x2, y2)) in itertools.pairwise(points))) / 2
+
+"""
 Helpers
 """
 
@@ -146,12 +154,6 @@ def gridpoints(grid):
     """Returns an iterator of (x,y) pairs representing points in the grid."""
     for x in itertools.product(range(len(grid)), range(len(grid[0]))):
         yield x
-
-def manhat(a, b):
-    """Manhattan distance of two points stored as complex numbers."""
-    return abs(a.real-b.real) + abs(a.imag-b.imag)
-
-EAST = 1
 
 """
 2D (integer point) functions
