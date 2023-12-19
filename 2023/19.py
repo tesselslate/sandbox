@@ -61,22 +61,39 @@ for l in F[1]:
 print(S)
 
 S = 0
-ranges = deque([("in", -1, {})])
+def add(r):
+    global S
+    S += math.prod([r[1] - r[0] for r in r.values()])
+
+ranges = deque([("in", {k: (1,4001) for k in 'xmas'})])
 while len(ranges):
-    (current, rule_num, ratings) = ranges.popleft()
-    #
-    # if rule_num == -1:
-    #     # find targets
-    #     workflow = workflows[current]
-    #     nums = defaultdict(list)
-    #     for rule in workflow:
-    #         target = rule[0]
-    #         xs = [int(x) for x in re.findall(r"\d+", rule)]
-    #         if xs:
-    #             assert len(xs) == 1
-    #             nums[target].append(xs[0])
-    #
-    #     # create new ranges
-    #     ranges.append((current, 0, dict(nums)))
-    #     continue
-    #
+    (workflow, ratings) = ranges.popleft()
+    workflow = workflows[workflow]
+    for rule in workflow:
+        if ":" not in rule:
+            if rule == "A": add(ratings)
+            elif rule != "R": ranges.append((rule, ratings.copy()))
+            break
+        cond, dest = rule.split(":")
+        var = cond[0]
+        vv = ratings[var]
+        comp = cond[1]
+        val = int(cond[2:])
+
+        p, f = None, None
+        if comp == ">":
+            p = (val+1, 4001)
+            f = (1,val+1)
+        else:
+            p = (1,val)
+            f = (val,4001)
+        p = ul.range_intersect(p, vv)
+        f = ul.range_intersect(f, vv)
+        if p:
+            nr = ratings.copy()
+            nr[var] = p
+            if dest == "A": add(nr)
+            elif dest != "R": ranges.append((dest, nr))
+        if not f: break
+        ratings[var] = f
+print(S)
