@@ -8,7 +8,7 @@ Math
 
 def shoelace(points) -> float:
     """Calculates the area of a simple polygon provided a list of (x,y) tuples."""
-    return abs(sum((x1*y2)-(x2*y1) for ((x1, y1), (x2, y2)) in itertools.pairwise(points))) / 2
+    return abs(sum((x1*y2)-(x2*y1) for ((x1, y1), (x2, y2)) in zip(points, points[1:] + points[:1]))) / 2
 
 """
 Helpers
