@@ -9,8 +9,7 @@ M = {}
 for l in F:
     name, outputs = ul.scan("%s -> %s", l)
     M[name] = [x.strip() for x in outputs.split(",")]
-S = {k[1:]: {} if k.startswith("&") else LO for k in M}
-S['rx'] = None
+S = {k[1:]: {} if k.startswith("&") else LO for k in M} | {'rx': None}
 for k, outputs in M.items():
     for x in outputs:
         if type(S[x]) == dict: S[x][k[1:]] = LO
