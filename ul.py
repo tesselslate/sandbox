@@ -132,15 +132,13 @@ def dirs_rc(inp):
     }
     return [padj4()[m[c]] for c in inp]
 
-def dirs_xy(inp):
-    """Returns a list of 2d offsets based on the given list of inputs (NESW, URDL)"""
-    m = {
-            "N": 0, "U": 0,
-            "E": 1, "R": 1,
-            "S": 2, "D": 2,
-            "W": 3, "L": 3,
-    }
-    return [padj4()[m[c]] for c in inp]
+def offset_rc(inp):
+    """Returns a 2d offset for the given direction(s)."""
+    p = (0, 0)
+    for c in inp:
+        d = dirs_rc(c)[0]
+        p = (p[0] + d[0], p[1] + d[1])
+    return p
 
 def padj4():
     """All 4 2d adjacent offsets (x,y tuples)"""
