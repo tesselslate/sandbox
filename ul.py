@@ -33,6 +33,11 @@ def range_intersect(a, b):
     x = (max(a[0], b[0]), min(a[1], b[1]))
     return x if x[0] <= x[1] else None
 
+def sign(n):
+    if n < 0: return -1
+    elif n == 0: return 0
+    else: return 1
+
 def transpose(xs):
     """Transposes the given 2D list (or other similar structure.) Returns a 2D list."""
     return [*map(list, zip(*xs))]
@@ -201,7 +206,7 @@ def double_linefeed(inp):
     EF
     [["A", "B"], ["C"], ["D", "EF"]]
     """
-    return [[l.strip() for l in x] for x in itersplit(inp, "")]
+    return [[l.rstrip("\n") for l in x] for x in itersplit(inp, "")]
 
 def halves(x):
     """Two halves of a string or list."""
@@ -210,7 +215,7 @@ def halves(x):
     return x[:l//2], x[l//2:]
 
 def input():
-    F = [l.strip() for l in sys.stdin.readlines()]
+    F = [l.rstrip("\n") for l in sys.stdin.readlines()]
     while F[-1] == "":
         del F[-1]
     return F
