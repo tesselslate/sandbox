@@ -8,10 +8,7 @@ for l in F:
         S += (5**i) * ("=-012".index(c) - 2)
 
 s = []
-c = False
-while S > 0 or c:
-    n = (S+c) % 5
-    s.append("012=-"[n])
-    S //= 5
-    c = n >= 3 or (c and n == 0)
+while S > 0:
+    s += "012=-"[S%5]
+    S = (S + 2) // 5
 print("".join(reversed(s)))
