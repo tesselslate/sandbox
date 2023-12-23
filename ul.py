@@ -257,6 +257,14 @@ def input():
         del F[-1]
     return F
 
+def ints(l):
+    """Returns all integers in the given string."""
+    return [int(x) for x in re.findall(r'(?:(?<!\d)-)?\d+', l)]
+
+def pints(l):
+    """Returns all positive integers in the given string."""
+    return [int(x) for x in re.findall(r'\d+', l)]
+
 def scan(fmt, inp):
     """
     Basic sscanf copycat for quick input parsing.
