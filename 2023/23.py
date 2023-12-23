@@ -1,6 +1,5 @@
-import functools, math, re, string, itertools, ul
-from dataclasses import dataclass
-from collections import Counter, defaultdict, deque
+import ul
+from collections import deque
 
 F = ul.input()
 G = ul.grid(F)
@@ -8,43 +7,60 @@ G = ul.grid(F)
 sr, sc = 0, 1
 er, ec = len(G)-1,len(G[0])-2
 
-X = defaultdict(dict)
-def intersections(xr,xc):
-    V = set((xr,xc))
-    Q = deque([(xr,xc,0)])
+# calculate "points of interest" (intersections, exits) accessible from a given point
+# do not cross any intersections
+def poi(sr, sc, climb):
+    P = {}
+    Q = deque([(sr,sc,0)])
+    V = set((sr,sc))
     while len(Q):
         (r,c,d) = Q.popleft()
-        n = 0
-        nq = []
+        n, nq = 0, []
+
         for rr, cc in ul.padj4():
-            rr, cc = rr+r, cc+c
-            if not ul.gridcheck(G,rr,cc): X[xr,xc][r,c] = d; continue
+            xr, xc = rr, cc
+            rr, cc = r+rr, c+cc
+            if not ul.gridcheck(G,rr,cc):
+                P[r,c] = d # exit
+                continue
             if G[rr][cc] != "#":
                 n += 1
-                if (rr,cc) in V: continue
-                nq.append((rr,cc,d+1))
-        if n > 2: X[xr,xc][r,c] = d
-        if n <= 2 or (r,c) == (xr,xc):
-            Q.extend(nq)
-            V |= set(x[:2] for x in nq)
-    if (xr,xc) in X[xr,xc]: del X[xr,xc][xr,xc]
+                if (rr,cc) not in V:
+                    if climb or G[rr][cc] == ".":
+                        nq.append((rr,cc))
+                    else:
+                        match G[rr][cc]:
+                            case "<" if xc == -1: nq.append((rr, cc))
+                            case ">" if xc == 1: nq.append((rr, cc))
+                            case "v" if xr == 1: nq.append((rr, cc))
+                            case "^" if xr == -1: nq.append((rr, cc))
+        if n > 2: P[r,c] = d
+        if n <= 2 or (r,c) == (sr,sc):
+            Q.extend((*p, d+1) for p in nq)
+            V |= {p for p in nq}
+    return P
 
-I = set()
-QQ = deque([(0,1)])
+# recursively calculate all POI for each intersection
+def poi_all(sr, sc, climb):
+    P = {}
+    Q = deque([(sr,sc)])
+    while len(Q):
+        (xr, xc) = Q.popleft()
+        P[xr,xc] = poi(xr, xc, climb)
+        for next in P[xr,xc]:
+            if next not in P:
+                P[next] = {}
+                Q.append(next)
+    return P
 
-while len(QQ):
-    (r,c) = QQ.popleft()
-    if (r,c) in I: continue
-    I.add((r,c))
-    intersections(r,c)
-    for (r,c) in X[r,c]: QQ.append((r,c))
-print(X)
+def dfs(p, d, V):
+    M = 0
+    if p == (er, ec): return d
+    for (r,c) in P[p]:
+        if (r,c) not in V:
+            M = max(M, dfs((r,c), d+P[p][r,c], V|{(r,c)}))
+    return M
 
-N = []
-def recurse(r,c,d,V):
-    if (r,c) == (er,ec): print(d); N.append(d)
-    for (rr, cc) in X[r,c]:
-        if (rr,cc) not in V:
-            recurse(rr,cc,d+X[r,c][rr,cc],V|{(rr,cc)})
-recurse(sr,sc,0,set((sr,sc)))
-print("sol:",max(N))
+for climb in [False, True]:
+    P = poi_all(sr, sc, climb)
+    print(dfs((sr, sc), 0, {(sr, sc)}))
