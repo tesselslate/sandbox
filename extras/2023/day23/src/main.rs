@@ -1,4 +1,3 @@
-use rayon::prelude::*;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::io::{self, Read};
 use std::time::Instant;
@@ -32,22 +31,88 @@ impl Grid {
 }
 
 type Graph = [[Option<(usize, i16)>; 64]; 64];
+type PolishedGraph<'a> = [&'a [(usize, i16)]; 64];
+
+// !!! WARNING: BAD CODE !!!
+fn polish_graph<'a>(input: &Graph, scratch: &'a mut [[(usize, i16); 64]; 64]) -> PolishedGraph<'a> {
+    static EMPTY_SLICE: [(usize, i16); 0] = [];
+    let mut polished: PolishedGraph<'a> = [&EMPTY_SLICE[..]; 64];
+    let mut lens: Vec<usize> = Vec::new();
+
+    for (i, xs) in input.iter().enumerate() {
+        let edges: Vec<(usize, i16)> = xs
+            .iter()
+            .take_while(|x| x.is_some())
+            .map(|x| x.unwrap())
+            .collect();
+        for (j, edge) in edges.iter().enumerate() {
+            scratch[i][j] = *edge;
+        }
+        lens.push(edges.len());
+    }
+
+    for (i, len) in lens.iter().enumerate() {
+        polished[i] = &scratch[i][..*len];
+    }
+
+    polished
+}
+/// !!! WARNING: BAD CODE !!!
 
 fn main() -> EmptyResult {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
 
-    let entries = parse(&input);
+    let start = Instant::now();
+    let grid = parse(&input);
+    let (p1_graph, p1_start, p1_end) = collapse(&grid, true);
+    let (p2_graph, p2_start, p2_end) = collapse(&grid, false);
+    println!(
+        "graphs:\t{:.3} ms",
+        Instant::now().duration_since(start).as_micros() as f64 / 1000.0
+    );
 
-    let now = Instant::now();
-    let x = part1(&entries);
-    let duration = Instant::now().duration_since(now);
-    println!("part 1: {} ({} micros)", x, duration.as_micros());
+    let mut p1_scratch = [[(0, 0); 64]; 64];
+    let mut p2_scratch = [[(0, 0); 64]; 64];
+    let p1_graph = polish_graph(&p1_graph, &mut p1_scratch);
+    let p2_graph = polish_graph(&p2_graph, &mut p2_scratch);
 
-    let now = Instant::now();
-    let x = part2(&entries);
-    let duration = Instant::now().duration_since(now);
-    println!("part 2: {} ({} micros)", x, duration.as_micros());
+    let mut q = Vec::with_capacity(128);
+
+    let start = Instant::now();
+    let max_dist = dfs(&p1_graph, p1_end, p1_start, &mut q);
+    println!(
+        "p1:\t{:.3} ms\t({})",
+        Instant::now().duration_since(start).as_micros() as f64 / 1000.0,
+        max_dist
+    );
+    q.clear();
+
+    let start = Instant::now();
+    let max_dist = dfs(&p2_graph, p2_end, p2_start, &mut q);
+    println!(
+        "p2:\t{:.3} ms\t({})",
+        Instant::now().duration_since(start).as_micros() as f64 / 1000.0,
+        max_dist
+    );
+
+    let mut times: Vec<u128> = Vec::new();
+    for _ in 0..100 {
+        q.clear();
+        let start = Instant::now();
+        dfs(&p2_graph, p2_end, p2_start, &mut q);
+        times.push(Instant::now().duration_since(start).as_nanos());
+    }
+
+    println!(
+        "\np2 * 100:\nmax:\t{:.3} ms\nmin:\t{:.3} ms\navg:\t{:.3} ms",
+        *times.iter().max().unwrap() as f64 / 1000000.0,
+        *times.iter().min().unwrap() as f64 / 1000000.0,
+        times.iter().map(|x| *x as f64).sum::<f64>() / (1000000.0 * 100.0),
+    );
+
+    assert!(q.capacity() <= 128); // never reallocated
+    drop(q);
 
     Ok(())
 }
@@ -148,6 +213,7 @@ fn collapse(input: &Grid, climbing: bool) -> (Graph, usize, usize) {
             }
         }
         data.insert((r, c), points);
+        data.get_mut(&(r, c)).unwrap().remove(&(r, c));
     }
 
     assert!(data.len() <= 64);
@@ -169,67 +235,22 @@ fn collapse(input: &Grid, climbing: bool) -> (Graph, usize, usize) {
     )
 }
 
-fn dfs(input: &Graph, goal: usize, current: usize, dist: i16, visited: u64) -> i16 {
-    input[current]
-        .iter()
-        .take_while(|x| x.is_some())
-        .map(|x| {
-            let (next, next_dist) = x.unwrap();
-            if next == goal {
-                return dist + next_dist;
-            }
+fn dfs(input: &PolishedGraph, goal: usize, start: usize, q: &mut Vec<(usize, u64, i16)>) -> i16 {
+    let mut max = 0;
+    q.push((start, 1u64 << start, 0));
 
-            let next_mask = 1u64 << next;
-            if (visited & next_mask) == 0 {
-                dfs(input, goal, next, dist + next_dist, visited | next_mask)
+    while let Some((current, visited, dist)) = q.pop() {
+        input[current].iter().for_each(|(next, next_dist)| {
+            if *next == goal {
+                max = i16::max(max, dist + next_dist);
             } else {
-                0
-            }
-        })
-        .max()
-        .unwrap()
-}
-
-fn bfs(input: &Graph, depth: usize, goal: usize, current: usize, dist: i16, visited: u64) -> i16 {
-    input[current]
-        .par_iter()
-        .filter(|x| x.is_some())
-        .map(|x| {
-            let (next, next_dist) = x.unwrap();
-            if next == goal {
-                return dist + next_dist;
-            }
-
-            let next_mask = 1u64 << next;
-            if (visited & next_mask) == 0 {
-                if depth > 0 {
-                    bfs(
-                        input,
-                        depth - 1,
-                        goal,
-                        next,
-                        dist + next_dist,
-                        visited | next_mask,
-                    )
-                } else {
-                    dfs(input, goal, next, dist + next_dist, visited | next_mask)
+                let next_mask = 1u64 << next;
+                if (visited & next_mask) == 0 {
+                    q.push((*next, visited | next_mask, dist + next_dist));
                 }
-            } else {
-                0
             }
         })
-        .max()
-        .unwrap()
-}
+    }
 
-fn part1(input: &Grid) -> i16 {
-    let (graph, start, end) = collapse(input, true);
-    let visited = 1u64 << start;
-    dfs(&graph, end, start, 0, visited)
-}
-
-fn part2(input: &Grid) -> i16 {
-    let (graph, start, end) = collapse(input, false);
-    let visited = 1u64 << start;
-    bfs(&graph, 12, end, start, 0, visited)
+    max
 }
