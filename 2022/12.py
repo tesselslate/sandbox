@@ -1,75 +1,39 @@
-import collections, util
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+F = ul.input()
+G = ul.grid(F)
 
-R = len(F)
-C = len(F[0])
+def elev(x):
+    match x:
+        case "S": return -1
+        case "E": return 26
+        case _: return string.ascii_lowercase.index(x)
 
-S, D = (0,0), (0,0)
+sr, sc = 0,0
+er, ec = 0,0
+st = []
+for (r,c) in ul.gridpoints(G):
+    if G[r][c] == "S": sr, sc = r, c
+    if G[r][c] == "E": er, ec = r, c
+    if G[r][c] == "a": st.append((r,c))
 
-for r, x in enumerate(F):
-    for c, y in enumerate(x):
-        if y == 'S':
-            S = (r,c)
-        elif y == 'E':
-            D = (r,c)
-
-def elevation(p):
-    global F
-    c = F[p[0]][p[1]]
-    if c == 'S':
-        return 0
-    elif c == 'E':
-        return 25
-    else:
-        return ord(c) - ord('a')
-
-def adj(p):
-    return [
-        (p[0] + 1, p[1]),
-        (p[0] - 1, p[1]),
-        (p[0], p[1] + 1),
-        (p[0], p[1] - 1),
-    ]
-
-Q = collections.deque()
-Q.append((S,0))
-FF = util.grid2d(R, C, -1)
-
-def pathfind(S, D):
-    global Q, FF
-    Q = collections.deque()
-    Q.append((S,0))
-    FF = util.grid2d(R, C, -1)
-
-    def add(cur, next, val):
-        global Q, FF
-        if next[0] < 0 or next[0] >= R or next[1] < 0 or next[1] >= C:
-            return
-        cur_el = elevation(cur)
-        next_el = elevation(next)
-        if next_el - cur_el > 1:
-            return
-        if FF[next[0]][next[1]] > -1:
-            return
-        Q.append((next, val))
-        FF[next[0]][next[1]] = val
-
-    Q.append((S,0))
-    while len(Q) > 0:
+def path(sr, sc):
+    Q = deque([(sr,sc,0)])
+    V = {}
+    while len(Q):
         E = Q.popleft()
-        for point in adj(E[0]):
-            add(E[0], point, E[1] + 1)
-    return FF[D[0]][D[1]]
+        (r,c,dist) = E
+        if (r,c) in V: continue
+        V[(r,c)] = dist
 
-print(pathfind(S,D))
+        e = elev(G[r][c])
+        for (rr,cc) in ul.padj4():
+            rr, cc = rr+r,cc+c
+            if ul.gridcheck(G,rr,cc) and elev(G[rr][cc]) <= e + 1:
+                Q.append((rr,cc,dist+1))
+    return V[(er,ec)] if (er,ec) in V else math.inf
 
-M = 1000000
-for r, x in enumerate(F):
-    for c, y in enumerate(x):
-        if y == 'a':
-            v = pathfind((r,c),D)
-            if v > 0:
-                M = min(M, v)
-print(M)
+print(path(sr,sc))
+print(min([path(r,c) for (r,c) in st + [(sr,sc)]]))

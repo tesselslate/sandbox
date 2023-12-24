@@ -1,34 +1,41 @@
-import collections, itertools, math, string, util
+import functools, math, re, string, itertools, ul
 from dataclasses import dataclass
-from functools import cache
-from sys import argv
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+F = ul.input()
 
-X = 1
 C = 0
+I = 0
+X = 1
+adding = None
+
+def cycle():
+    global C, I, X, adding
+    if adding is not None:
+        C += 1
+        X += adding
+        adding = None
+        return
+
+    instr = F[I].split()
+    match instr[0]:
+        case "noop": pass
+        case "addx":
+            adding = int(instr[1])
+    C += 1
+    I += 1
+    return
+
 S = 0
-G = util.grid(40, ".")
-
-def update():
-    global G, S
-    if (C - 20) % 40 == 0:
-        S += X*C
-    for i in range(-1, 2):
-        cx = (C-1) % 40
-        if cx == X+i:
-            G[C//40][cx] = "#"
-
-for l in F:
-    w = l.split(" ")
-    if w[0] == "noop":
-        C += 1
-        update()
-    else:
-        C += 1
-        update()
-        C += 1
-        update()
-        X += int(w[1])
-util.print_grid(G)
+O = [[0 for _ in range(40)] for _ in range(6)]
+for i in range(1,241):
+    during = X
+    now = (i//40,(i-1)%40)
+    if abs(X-now[1]) <= 1:
+        O[now[0]][now[1]] = 1
+    cycle()
+    if (i-20) % 40 == 0:
+        S += during * (i)
 print(S)
+for r in O:
+    print("".join("#" if r[c] else "." for c in range(len(r))))

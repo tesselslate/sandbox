@@ -1,56 +1,32 @@
-from sys import argv
+import ul, z3
 
-F = [l.strip() for l in open(argv[1])]
-M = {}
+F = ul.input()
 
+x = []
 for l in F:
-    words = l.split(" ")
-    M[words[0].strip(":")] = words[1:]
+    words = l.split()
+    words = [words[0].strip(":"), "= lambda:"] + [word+"()" if len(word) == 4 else word for word in words[1:]]
+    x.append(" ".join(words))
+x.append("print(root())")
+exec("\n".join(x))
 
-def solve(monkey):
-    if M[monkey][0].isdigit():
-        return int(M[monkey][0])
-    else:
-        m = M[monkey]
-        op = m[1] if m[1] != "/" else "//"
-        return eval(f"{solve(m[0])} {op} {solve(m[2])}")
-
-print(solve("root"))
-
-path = []
-c = "humn"
-while c != "root":
-    for k, v in M.items():
-        if c in v:
-            path.append(k)
-            c = k
-path.reverse()
-path.append("humn")
-
-def solve_for(node, value):
-    if len(M[node]) == 1:
-        return value
-    else:
-        node = M[node]
-        a = node[0] in path
-        other = solve(node[2]) if a else solve(node[0])
-
-        tnode = node[0] if a else node[2]
-        if node[1] == "+":
-            return solve_for(tnode, value - other)
-        elif node[1] == "-":
-            if a:
-                return solve_for(tnode, value + other)
-            else:
-                return solve_for(tnode, other - value)
-        elif node[1] == "/":
-            if a:
-                return solve_for(tnode, value * other)
-            else:
-                return solve_for(tnode, other // value)
+s = z3.Solver()
+names = [l.split()[0].strip(":") for l in F]
+ints = {name: z3.Int(name) for name in names}
+xs = None
+for l in F:
+    words = l.split()
+    name = words[0].strip(":")
+    if name != "humn" and name != "root":
+        if len(words) == 2:
+            s.add(ints[name] == int(words[1]))
         else:
-            return solve_for(tnode, value // other)
-
-a = M["root"][0] == path[1]
-v = solve_for(path[1], solve(M["root"][2] if a else M["root"][0]))
-print(v)
+            match words[2]:
+                case "+": s.add(ints[name] == ints[words[1]] + ints[words[3]])
+                case "-": s.add(ints[name] == ints[words[1]] - ints[words[3]])
+                case "*": s.add(ints[name] == ints[words[1]] * ints[words[3]])
+                case "/": s.add(ints[name] == ints[words[1]] / ints[words[3]])
+    if name == "root":
+        s.add(ints[words[1]] == ints[words[3]])
+s.check()
+print(s.model().eval(ints["humn"]))

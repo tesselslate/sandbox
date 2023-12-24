@@ -1,32 +1,32 @@
-import copy, util
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
+from copy import deepcopy
 
-F = [l.strip("\n") for l in open(argv[1])]
-G = []
+F = ul.input()
+F = ul.double_linefeed(F)
 
-for i in range(9):
-    R = []
-    for j in range(8):
-        c = F[j][1+i*4]
-        if c != " ":
-            R.append(c)
-    R.reverse()
-    G.append(R)
-G2 = copy.deepcopy(G)
-actions = []
-for i in range(10, len(F)):
-    l = F[i]
-    a, b, c = util.scan("move %d from %d to %d", l)
-    actions.append((a,b,c))
+N = 9
+stacks = [[] for _ in range(N)]
 
-for a in actions:
-    for i in range(a[0]):
-        G[a[2]-1].append(G[a[1]-1].pop())
-print(''.join([c[len(c)-1] for c in G]))
-for a in actions:
-    L = []
-    for i in range(a[0]):
-        L.append(G2[a[1]-1].pop())
-    L.reverse()
-    G2[a[2]-1] += L
-print(''.join([c[len(c)-1] for c in G2]))
+for r in range(len(F[0])-1):
+    for c in range(N):
+        x = c * 4 + 1
+        if x < len(F[0][r]):
+            ch = F[0][r][x]
+            if ch != " ": stacks[c].insert(0, ch)
+
+stacks2 = deepcopy(stacks)
+
+for l in F[1]:
+    a, b, c = ul.scan("move %d from %d to %d", l)
+    Q = deque()
+    Q2 = deque()
+    for _ in range(a):
+        Q.append(stacks[b-1].pop())
+        Q2.append(stacks2[b-1].pop())
+    while len(Q):
+        stacks[c-1].append(Q.popleft())
+        stacks2[c-1].append(Q2.pop())
+print("".join([stack[-1] for stack in stacks]))
+print("".join([stack[-1] for stack in stacks2]))

@@ -1,13 +1,11 @@
-F = [l.strip() for l in open("inputs/01")]
+import ul
+
+F = ul.input()
+F = ul.double_linefeed(F)
 
 elves = []
-elf = 0
-for l in F:
-    if l == "":
-        elves.append(elf)
-        elf = 0
-        continue
-    elf += int(l)
+for ls in F:
+    elves.append((sum(int(l) for l in ls)))
 elves.sort()
 print(elves[-1])
-print(elves[-1]+elves[-2]+elves[-3])
+print(sum(elves[-3:]))

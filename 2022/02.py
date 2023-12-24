@@ -1,32 +1,24 @@
-F = [l.strip() for l in open("inputs/02")]
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-sum = 0
-for l in F:
-    a = l[0]
-    b = l[2]
-    sum += (ord(b) - ord('X')) + 1
-    if (ord(a) - ord('A')) == (ord(b) - ord('X')):
-        sum += 3
-    elif a == 'A' and b == 'Y':
-        sum += 6
-    elif a == 'B' and b == 'Z':
-        sum += 6
-    elif a == 'C' and b == 'X':
-        sum += 6
-print(sum)
+F = ul.input()
 
-sum = 0
+S = 0
+S2 = 0
 for l in F:
-    a = ord(l[0]) - ord('A')
-    b = l[2]
-    piece = None
-    if b == 'X':
-        piece = (a-1) % 3
-    elif b == 'Y':
-        piece = a
-        sum += 3
-    else:
-        piece = (a+1)%3
-        sum += 6
-    sum += piece + 1
-print(sum)
+    a, b = l.split()
+    a = "ABC".index(a)
+    b = "XYZ".index(b)
+
+    v = 3
+    if (a + 1) % 3 == b: v = 6
+    if (a - 1) % 3 == b: v = 0
+    S += v + b + 1
+
+    match b:
+        case 0: S2 += ((a - 1) % 3) + 1
+        case 1: S2 += a + 1 + 3
+        case 2: S2 += ((a + 1) % 3) + 1 + 6
+print(S)
+print(S2)

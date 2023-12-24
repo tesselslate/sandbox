@@ -1,74 +1,41 @@
-import util
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+F = ul.input()
+W = set()
 
-walls = []
 for l in F:
-    s = None
-    words = l.split(" ")
-    for i in range(0, len(words), 2):
-        x, y = util.scan("%d,%d", words[i])
-        if s == None:
-            s = (x,y)
-            continue
-        walls.append((s, (x,y)))
-        s = (x,y)
-p = []
-for w in walls:
-    p += [w[0], w[1]]
+    xs = l.split(" -> ")
+    for (a,b) in itertools.pairwise(xs):
+        x1, y1 = ul.scan("%d,%d", a.strip())
+        x2, y2 = ul.scan("%d,%d", b.strip())
+        x1, x2 = ul.minmax(x1, x2)
+        y1, y2 = ul.minmax(y1, y2)
 
-PADDING = 200
-MIN_X = min(p, key=lambda x : x[0])[0]
-MAX_X = max(p, key=lambda x : x[0])[0]
-MAX_Y = max(p, key=lambda x : x[1])[1]
-XSIZE = MAX_X - MIN_X + PADDING * 2
-YSIZE = MAX_Y + 3
-G = util.grid2d(YSIZE, XSIZE, '.')
-for w in walls:
-    for r in util.irange(w[0][0], w[1][0]):
-        for c in util.irange(w[0][1], w[1][1]):
-            G[c][r-MIN_X-PADDING] = '#'
+        it = zip(itertools.repeat(x1), range(y1, y2+1)) if x1 == x2 else zip(range(x1, x2+1), itertools.repeat(y1))
+        for (x,y) in it: W.add((x,y))
+floor = max(y for (x,y) in W) + 2
 
-def settle(r,c):
-    global G
+def sim(has_floor):
+    S = set()
+    def occupied(p):
+        return p in S or p in W or (has_floor and p[1] == floor)
 
-    if G[r][c] == "o":
-        return False
-    while r < YSIZE and G[r][c] == '.':
-        r += 1
-    if r == YSIZE:
-        return False
+    while (500,0) not in S:
+        s = (500,0)
+        while True:
+            spots = [(s[0],s[1]+1),(s[0]-1,s[1]+1),(s[0]+1,s[1]+1)]
+            for spot in spots:
+                if not occupied(spot):
+                    s = spot
+                    break
+            else:
+                break
+            if s[1] >= floor: break
+        if s[1] < floor: S.add(s)
+        else: break
+    return len(S)
 
-    if G[r][c] == '#' or G[r][c] == 'o':
-        if G[r][c-1] == '.':
-            return settle(r,c-1)
-        elif G[r][c+1] == '.':
-            return settle(r,c+1)
-        else:
-            G[r-1][c] = 'o'
-            return True
-    return False
-
-while settle(0, 500-MIN_X-PADDING):
-    pass
-S = 0
-for x in G:
-    for y in x:
-        if y == 'o': S += 1
-print(S)
-
-G = util.grid2d(YSIZE, XSIZE, '.')
-for w in walls:
-    for r in util.irange(w[0][0], w[1][0]):
-        for c in util.irange(w[0][1], w[1][1]):
-            G[c][r-MIN_X-PADDING] = '#'
-for i in range(XSIZE):
-    G[YSIZE-1][i] = '#'
-while settle(0, 500-MIN_X-PADDING):
-    pass
-S = 0
-for x in G:
-    for y in x:
-        if y == 'o': S += 1
-print(S)
+print(sim(False))
+print(sim(True))

@@ -1,64 +1,46 @@
-import copy
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-IM = [
-        [72,64,51,57,93,97,68],
-        [62],
-        [57,94,69,79,72],
-        [80,64,92,93,64,56],
-        [70,88,95,99,78,72,65,94],
-        [57,95,81,61],
-        [79,99],
-        [68,98,62],
-]
+F = ul.input()
+F = ul.double_linefeed(F)
 
-O = [
-        lambda n : n * 19,
-        lambda n : n * 11,
-        lambda n : n + 6,
-        lambda n : n + 5,
-        lambda n : n + 7,
-        lambda n : n * n,
-        lambda n : n + 2,
-        lambda n : n + 3,
-]
+# new = old XYZ
 
-T = [
-        lambda n : 4 if n % 17 == 0 else 7,
-        lambda n : 3 if n % 3 == 0 else 2,
-        lambda n : 0 if n % 19 == 0 else 4,
-        lambda n : 2 if n % 7 == 0 else 0,
-        lambda n : 7 if n % 2 == 0 else 5,
-        lambda n : 1 if n % 5 == 0 else 6,
-        lambda n : 3 if n % 11 == 0 else 1,
-        lambda n : 5 if n % 13 == 0 else 6,
-]
+def parse(x):
+    x = [l.strip() for l in x[1:]]
+    items = [int(n) for n in x[0].replace(',','').split() if n.isdigit()]
+    op, = ul.scan("Operation: new = %s", x[1])
+    op_lambda = eval(f"lambda old: {op}")
+    div, = ul.scan("Test: divisible by %d", x[2])
+    true, = ul.scan("If true: throw to monkey %d", x[3])
+    false, = ul.scan("If false: throw to monkey %d", x[4])
+    return (items,op_lambda,div,true,false)
 
+M = [parse(x) for x in F]
+I = [0 for _ in M]
+lcm = math.lcm(*[m[2] for m in M])
 
-def tick(div):
-    global S, M
+def turn(div):
+    for (i, m) in enumerate(M):
+        I[i] += len(m[0])
+        for w in m[0]:
+            n = m[1](w)
+            if div: n //= 3
+            else: n %= lcm
+            if n % m[2] == 0:
+                M[m[3]][0].append(n)
+            else:
+                M[m[4]][0].append(n)
+        m[0].clear()
 
-    for i in range(len(M)):
-        S[i] += len(M[i])
-        for item in M[i]:
-            v = O[i](item)
-            if div:
-                v //= 3
-            M[T[i](v)].append(v)
-        M[i] = []
+for _ in range(20): turn(True)
+I.sort()
+print(math.prod(I[-2:]))
 
-M = copy.deepcopy(IM)
-S = [0]*len(M)
-for _ in range(20):
-    tick(True)
-S = list(reversed(sorted(S)))
-print(S[0]*S[1])
+M = [parse(x) for x in F]
+I = [0 for _ in M]
 
-M = copy.deepcopy(IM)
-S = [0]*len(M)
-for i in range(10000):
-    for i in range(len(M)):
-        for j in range(len(M[i])):
-            M[i][j] %= 17*3*19*7*2*5*11*13
-    tick(False)
-S = list(reversed(sorted(S)))
-print(S[0]*S[1])
+for _ in range(10000): turn(False)
+I.sort()
+print(math.prod(I[-2:]))

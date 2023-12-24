@@ -1,14 +1,18 @@
-import string, util
-F = [l.strip() for l in open("inputs/03")]
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-sum = 0
+F = ul.input()
+
+S = 0
 for l in F:
-    a, b = util.halves(l)
-    sum += 1 + string.ascii_letters.index(''.join(set(a)&set(b)))
-print(sum)
+    a, b = ul.halves(l)
+    x = "".join(set(a) & set(b))
+    S += string.ascii_letters.index(x) + 1
+print(S)
 
-sum = 0
-for i in range(0, len(F), 3):
-    a, b, c = F[i], F[i+1], F[i+2]
-    sum += 1 + string.ascii_letters.index(''.join(set(a)&set(b)&set(c)))
-print(sum)
+S = 0
+for (x, y, z) in ul.batched(F, 3):
+    x = "".join(set(x) & set(y) & set(z))
+    S += string.ascii_letters.index(x) + 1
+print(S)

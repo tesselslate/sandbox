@@ -1,95 +1,45 @@
-import collections, util
-from sys import argv
+import itertools, ul
+from collections import defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
-P = set()
+F = ul.input()
+G = ul.grid(F)
+G = {(r,c) for (r,c) in ul.gridpoints(G) if G[r][c] == "#"}
+D = deque("NSWE")
+P = {
+    "N": [ul.offset_rc(x) for x in ["N","NW","NE"]],
+    "S": [ul.offset_rc(x) for x in ["S","SW","SE"]],
+    "W": [ul.offset_rc(x) for x in ["W","SW","NW"]],
+    "E": [ul.offset_rc(x) for x in ["E","SE","NE"]],
+}
 
-for r in range(len(F)):
-    for c in range(len(F[r])):
-        if F[r][c] == "#":
-            P.add((r,c))
+def check(r,c,d):
+    for p in P[d]:
+        if (r+p[0], c+p[1]) in G: return False
+    return True
 
-dirs = collections.deque([
-        lambda elf : (-1, 0) if not set([(elf[0]-1,elf[1]), (elf[0]-1, elf[1]-1), (elf[0]-1, elf[1]+1)]) & P else None,
-        lambda elf : (1, 0) if not set([(elf[0]+1,elf[1]), (elf[0]+1, elf[1]-1), (elf[0]+1, elf[1]+1)]) & P else None,
-        lambda elf : (0, -1) if not set([(elf[0]-1,elf[1]-1), (elf[0], elf[1]-1), (elf[0]+1, elf[1]-1)]) & P else None,
-        lambda elf : (0, 1) if not set([(elf[0]-1,elf[1]+1), (elf[0], elf[1]+1), (elf[0]+1, elf[1]+1)]) & P else None
-])
-
-def tick():
-    global P, dirs
-    NP = set()
-    proposed = {}
-    for elf in P:
-        # north
-        dir = (0,0)
-        adj = [
-                (1,-1),
-                (1,0),
-                (1,1),
-                (0,-1),
-                (0,1),
-                (-1,-1),
-                (-1,0),
-                (-1,1),
-        ]
-        f = False
-        for p in adj:
-            if (elf[0]+p[0], elf[1]+p[1]) in P:
-                f = True
-                break
-        if f:
-            for dirfn in dirs:
-                v = dirfn(elf)
-                if v:
-                    dir = v
-                    break
-        if dir != (0,0):
-            proposed[elf] = (elf[0]+dir[0],elf[1]+dir[1])
-        else:
-            NP.add(elf)
-    mult = {}
-    moves = list(proposed.values())
-    for m in moves:
-        mult[m] = moves.count(m)
-    moved = False
-    for elf, move in proposed.items():
-        if mult[move] > 1:
-            NP.add(elf)
+def turn():
+    proposals = defaultdict(list)
+    for (r,c) in G:
+        if not set((r+rr, c+cc) for (rr, cc) in ul.padj8() if (r+rr, c+cc) in G):
             continue
-        moved = True
-        NP.add(move)
-    dirs.rotate(-1)
-    return NP, moved
+        for dir in D:
+            if check(r, c, dir):
+                d = ul.offset_rc(dir)
+                proposals[r+d[0], c+d[1]].append((r,c))
+                break
+    n = 0
+    for goto, elves in proposals.items():
+        if len(elves) > 1: continue
+        G.remove(elves[0])
+        G.add(goto)
+        n += 1
+    D.rotate(-1)
+    return n
 
-
-def print_grid():
-    mx = min([x[1] for x in P])
-    Mx = max([x[1] for x in P])
-    my = min([x[0] for x in P])
-    My = max([x[0] for x in P])
-    for y in util.irange(my, My):
-        s = ""
-        for x in util.irange(mx, Mx):
-            if (y,x) not in P:
-                s += "."
-            else:
-                s += "#"
-        print(s)
-
-for i in range(1000000):
-    P, moved = tick()
+for i in itertools.count():
+    n = turn()
     if i == 9:
-        mx = min([x[1] for x in P])
-        Mx = max([x[1] for x in P])
-        my = min([x[0] for x in P])
-        My = max([x[0] for x in P])
-        S = 0
-        for y in util.irange(my, My):
-            for x in util.irange(mx, Mx):
-                if (y,x) not in P:
-                    S += 1
-        print(S, len(P))
-    if not moved:
-        print(i+1)
-        break
+        rm, RM = ul.minmax(*{r for (r,c) in G})
+        cm, CM = ul.minmax(*{c for (r,c) in G})
+        print((RM-rm+1)*(CM-cm+1)-len(G))
+    if not n: print(i+1); break

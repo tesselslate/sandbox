@@ -1,51 +1,29 @@
-from util import *
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
-S = 0
+F = ul.input()
+dirs = "LDRU"
 
-I = []
-for l in F:
-    a, b = scan("%s %d", l)
-    I.append([a,b])
+def sim(N):
+    knots = [(0,0) for _ in range(N)]
+    v = set((0,0))
 
-def sim(k):
-    global I
+    def proc(h, t):
+        return (t[0] - ul.sign(t[0]-h[0]), t[1] - ul.sign(t[1]-h[1]))
 
-    V = set()
-    K = [(0,0)]*k
-
-    for i in I:
-        m = (0,0)
-        if i[0] == 'R':
-            m = (1, 0)
-        if i[0] == 'L':
-            m = (-1, 0)
-        if i[0] == 'U':
-            m = (0, -1)
-        if i[0] == 'D':
-            m = (0, 1)
-
-        for _ in range(i[1]):
-            K[0] = (K[0][0] + m[0], K[0][1] + m[1])
-            for idx in range(1, k):
-                H = K[idx-1]
-                T = K[idx]
-                touching = abs(H[0] - T[0]) <= 1 and abs(H[1] - T[1]) <= 1
-                if not touching:
-                    v = H[1] != T[1]
-                    h = H[0] != T[0]
-                    
-                    if v and not h:
-                        T = (T[0], T[1] + sign(H[1] - T[1]))
-                    elif h and not v:
-                        T = (T[0] + sign(H[0] - T[0]), T[1])
-                    elif h and v:
-                        T = (T[0] + sign(H[0] - T[0]), T[1] + sign(H[1] - T[1]))
-                K[idx] = T
-                if idx == k-1:
-                    V.add(T)
-    return len(V)
-
+    for l in F:
+        d, n = ul.scan("%s %d", l)
+        (r, c) = knots[0]
+        (rr, cc) = ul.padj4()[dirs.index(d)]
+        for _ in range(n):
+            r += rr
+            c += cc
+            knots[0] = (r, c)
+            for i in range(1, N):
+                while abs(knots[i][0] - knots[i-1][0]) > 1 or abs(knots[i][1] - knots[i-1][1]) > 1:
+                    knots[i] = proc(knots[i-1], knots[i])
+                    if i == N-1: v.add(knots[i])
+    return len(v)
 print(sim(2))
 print(sim(10))

@@ -1,74 +1,36 @@
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+F = ul.input()
+F = ul.double_linefeed(F)
+F = [(eval(l[0]), eval(l[1])) for l in F]
 
-I = []
-for i in range(0,len(F), 3):
-    I.append([eval(F[i]), eval(F[i+1])])
+# 1 good, 0 continue, -1 bad
+def cmp(a, b):
+    if type(a) == int and type(b) == int:
+        if a < b: return 1
+        if a == b: return 0
+        if a > b: return -1
+    elif type(a) == list and type(b) == list:
+        for a, b in itertools.zip_longest(a, b):
+            if a == None: return 1
+            if b == None: return -1
+            r = cmp(a, b)
+            if r == 0: continue
+            else: return r
+        return 0
+    else:
+        if type(a) == int: a = [a]
+        if type(b) == int: b = [b]
+        return cmp(a, b)
 
-def compare(x):
-    a = x[0]
-    b = x[1]
-    al = len(a) == 0
-    bl = len(b) == 0
-    if al and not bl:
-        return True
-    elif bl and not al:
-        return False
-    elif al and bl:
-        return None
-    while a:
-        av = a[0]
-        bv = b[0]
-        if type(av) == int and type(bv) == int:
-            if av < bv:
-                return True
-            elif av > bv:
-                return False
-        elif type(av) == list and type(bv) == list:
-            v = compare([av, bv])
-            if v == True or v == False: return v
-        else:
-            avl = type(av) == list
-            if avl:
-                bv = [bv]
-            else:
-                av = [av]
-            v = compare([av, bv])
-            if v == True or v == False: return v
-        al = len(a) == 1
-        bl = len(b) == 1
-        if al and not bl:
-            return True
-        elif bl and not al:
-            return False
-        elif al and bl:
-            return None
-        a = a[1:]
-        b = b[1:]
+print(sum(i + 1 for (i, l) in enumerate(F) if cmp(*l) == 1))
 
-S = 0
-for i in range(len(I)):
-    if compare(I[i]):
-        S += i + 1
-print(S)
+F = [x for xs in F for x in xs]
+F.append([[2]])
+F.append([[6]])
+F = list(reversed(sorted(F, key=functools.cmp_to_key(cmp))))
 
-I = [eval(x) for x in F if x != ""]
-I.append([[2]])
-I.append([[6]])
-
-for i in range(len(I)):
-    s = True
-    for j in range(len(I) - i - 1):
-        if not compare([I[j], I[j+1]]):
-            I[j], I[j+1] = I[j+1], I[j]
-            s = False
-    if s:
-        break
-A, B = 0, 0
-for i, v in enumerate(I):
-    if v == [[2]]:
-        A = i + 1
-    elif v == [[6]]:
-        B = i + 1
-print(A*B)
+F.insert(0, None) # skip +1
+print(F.index([[2]])*F.index([[6]]))

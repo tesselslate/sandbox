@@ -1,80 +1,56 @@
-import collections
-from sys import argv
+import math, ul
+from collections import defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
-G = {}
+F = ul.input()
+G = ul.grid(F)
 
-for r in range(len(F)):
-    for c in range(len(F[r])):
-        if not (r,c) in G:
-            G[(r,c)] = []
-        v = F[r][c]
-        if v != "#" and v != ".":
-            G[(r,c)].append(v)
+B = defaultdict(set)
+W = set()
+for (r,c) in ul.gridpoints(G):
+    match G[r][c]:
+        case "#": W.add((r,c))
+        case ".": pass
+        case _: B[r,c].add("NSEW"["^v><".index(G[r][c])])
 
+fs = lambda dd: frozenset((r,c) for (r,c) in dd)
 
-def tick_blizzards(G):
-    NG = {}
-    dirs = {
-            "<": (0, -1),
-            ">": (0, 1),
-            "v": (1, 0),
-            "^": (-1, 0)
-    }
-    for key in G.keys():
-        val = G[key]
-        for blizzard in val:
-            d = dirs[blizzard]
-            v = [d[0] + key[0], d[1] + key[1]]
-            if v[0] == 0:
-                v[0] = len(F) - 2
-            elif v[0] == len(F) - 1:
-                v[0] = 1
-            if v[1] == 0:
-                v[1] = len(F[0]) - 2
-            elif v[1] == len(F[0]) - 1:
-                v[1] = 1
-            v = tuple(v)
-            if not v in NG:
-                NG[v] = []
-            NG[v].append(blizzard)
-    return NG
-
-BT = []
-MAXSTEPS = 2000
-for i in range(MAXSTEPS):
-    G = tick_blizzards(G)
-    BT.append(G)
+BL = [fs(B)]
+for i in range(math.lcm(len(G) - 2, len(G[0]) - 2)-1):
+    NB = defaultdict(set)
+    for (r,c), blizzards in B.items():
+        for b in blizzards:
+            rr, cc = ul.offset_rc(b)
+            rr, cc = r+rr, c+cc
+            if rr == 0: rr = len(G) - 2
+            if rr == len(G) - 1: rr = 1
+            if cc == 0: cc = len(G[0]) - 2
+            if cc == len(G[0]) - 1: cc = 1
+            NB[rr,cc].add(b)
+    BL.append(fs(NB))
+    B = NB
 
 def bfs(start, goal):
-    Q = collections.deque([start])
+    Q = deque([start])
     V = set()
-    while Q:
-        E = Q.popleft()
-        if E[0] == goal:
-            return E[1]
-        if E[1] > MAXSTEPS - 1:
-            continue
-        dirs = [
-            (0, -1),
-            (0, 1),
-            (1, 0),
-            (-1, 0),
-            (0, 0),
-        ]
+    while len(Q):
+        (r,c,t) = Q.popleft()
+        if (r,c) == goal: return t
+        for rr, cc in ul.padj4() + [(0,0)]:
+            rr, cc = rr+r, cc+c
 
-        G = BT[E[1]]
-        for d in dirs:
-            p = E[0]
-            np = (p[0] + d[0], p[1] + d[1])
-            if np in G or np[0] > len(F) - 1 or F[np[0]][np[1]] == "#":
-                continue
-            if (np,E[1]+1) in V:
-                continue
-            V.add((np,E[1]+1))
-            Q.append((np,E[1]+1))
+            if not ul.gridcheck(G, rr, cc): continue
+            if (rr, cc) in W or (rr, cc) in BL[(t+1)%len(BL)]: continue
 
-v = bfs(((0,1),0), (len(F)-1,len(F[0])-2))
-v = bfs(((len(F)-1,len(F[0])-2), v), (0,1))
-v = bfs(((0,1),v), (len(F)-1,len(F[0])-2))
-print(v)
+            if (rr,cc,t+1) in V: continue
+            V.add((rr,cc,t+1))
+
+            Q.append((rr,cc,t+1))
+
+A = (0,1)
+B = (len(G)-1,len(G[0])-2)
+n = bfs((*A, 0), B)
+print(n)
+
+n = bfs((*B, n), A)
+n = bfs((*A, n), B)
+print(n)

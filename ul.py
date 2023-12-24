@@ -41,6 +41,11 @@ def range_intersect(a, b):
     x = (max(a[0], b[0]), min(a[1], b[1]))
     return x if x[0] <= x[1] else None
 
+def sign(n):
+    if n < 0: return -1
+    elif n == 0: return 0
+    else: return 1
+
 def transpose(xs):
     """Transposes the given 2D list (or other similar structure.) Returns a 2D list."""
     return [*map(list, zip(*xs))]
@@ -155,6 +160,10 @@ def gridpoints(grid):
     for x in itertools.product(range(len(grid)), range(len(grid[0]))):
         yield x
 
+def manhat(a, b):
+    """Manhattan distance of two points."""
+    return abs(a[0]-b[0]) + abs(a[1]-b[1])
+
 """
 2D (integer point) functions
 """
@@ -169,15 +178,13 @@ def dirs_rc(inp):
     }
     return [padj4()[m[c]] for c in inp]
 
-def dirs_xy(inp):
-    """Returns a list of 2d offsets based on the given list of inputs (NESW, URDL)"""
-    m = {
-            "N": 0, "U": 0,
-            "E": 1, "R": 1,
-            "S": 2, "D": 2,
-            "W": 3, "L": 3,
-    }
-    return [padj4()[m[c]] for c in inp]
+def offset_rc(inp):
+    """Returns a 2d offset for the given direction(s)."""
+    p = (0, 0)
+    for c in inp:
+        d = dirs_rc(c)[0]
+        p = (p[0] + d[0], p[1] + d[1])
+    return p
 
 def padj4():
     """All 4 2d adjacent offsets (x,y tuples)"""
@@ -243,7 +250,7 @@ def double_linefeed(inp):
     EF
     [["A", "B"], ["C"], ["D", "EF"]]
     """
-    return [[l.strip() for l in x] for x in itersplit(inp, "")]
+    return [[l.rstrip("\n") for l in x] for x in itersplit(inp, "")]
 
 def halves(x):
     """Two halves of a string or list."""
@@ -252,7 +259,7 @@ def halves(x):
     return x[:l//2], x[l//2:]
 
 def input():
-    F = [l.strip() for l in sys.stdin.readlines()]
+    F = [l.rstrip("\n") for l in sys.stdin.readlines()]
     while F[-1] == "":
         del F[-1]
     return F

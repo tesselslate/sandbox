@@ -1,65 +1,39 @@
-import util
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
+F = ul.input()
+F = [tuple(ul.scan("Sensor at x=%d, y=%d: closest beacon is at x=%d, y=%d", l)) for l in F]
+dists = []
 
-I = []
-for l in F:
-    a, b, c, d = util.scan("Sensor at x=%d, y=%d: closest beacon is at x=%d, y=%d", l)
-    I.append(((a,b),(c,d)))
+R = 2000000
+N = R * 2
+S = set()
+for b in F:
+    x1, y1, x2, y2 = b
+    bdist = ul.manhat((x1, y1), (x2, y2))
+    dists.append(bdist)
+    rdist = bdist - abs(R - y1)
+    S |= {*range(x1-rdist,x1+rdist)}
+print(len(S))
 
-def no_beacon(scan, y):
-    beacons = {s[1] for s in scan}
-    S = set()
-    for s in scan:
-        a, b = s
-        x1, y1 = a
-        x2, y2 = b
-        dist = util.manhattan(x1, y1, x2, y2)
+def check(p):
+    for bdist, b in zip(dists, F):
+        x1, y1, *_ = b
+        if ul.manhat((x1,y1),(p[0],p[1])) <= bdist: return False
+    return True
 
-        # x1, y1 = sensor
-        x = x1
-        while util.manhattan(x1, y1, x, y) < dist:
-            x += 1
-        d = x-x1
-        for x in util.irange(x1-d, x1+d):
-            if (x,y) not in beacons:
-                S.add(x)
-    return S
+def try_all():
+    c = set()
+    for bdist, b in zip(dists, F):
+        x1, y1, *_ = b
 
-def find_beacon(scan, maxbound):
-    dists = {}
-    for s in scan:
-        a, b = s
-        x1, y1 = a
-        x2, y2 = b
-        d = util.manhattan(x1, y1, x2, y2)
-        dists[a] = d+1
+        y = y1 + bdist + 1
+        for n in range(bdist):
+            for p in [(x1+n,y-n),(x1-n,y-n),(x1+n,y+n),(x1-n,y+n)]:
+                if 0 <= p[0] <= N and 0 <= p[1] <= N: c.add(p)
+    for p in c:
+        if check(p): return p
 
-    s = set()
-    for spot, dist in dists.items():
-        j = dist
-        x, y = spot[0], spot[1]
-        for i in range(dist):
-            s.add((x-j + i, y+i))
-            s.add((x+j - i, y+i))
-            s.add((x-j + i, y-i))
-            s.add((x+j - i, y-i))
-
-    v = None
-    for spot in s:
-        good = True
-        for scanner, dist in dists.items():
-            if util.manhattan(spot[0], spot[1], scanner[0], scanner[1]) <= dist-1:
-                good = False
-                break
-            elif spot[0] < 0 or spot[0] > maxbound or spot[1] < 0 or spot[1] > maxbound:
-                good = False
-                break
-        if good:
-            v = spot
-            break
-    return v[0]*4000000+v[1]
-
-print(len(no_beacon(I, 2000000)))
-print(find_beacon(I, 4000000))
+p = try_all()
+print(4000000*p[0]+p[1])

@@ -1,99 +1,66 @@
-import util
-from sys import argv
+import itertools, ul
 
-F = [l.strip() for l in open(argv[1])][0]
-R = [
-        [[1,1,1,1]],
+F = ul.input()[0]
 
-        [[0,1,0],
-         [1,1,1],
-         [0,1,0]],
+wind = itertools.cycle(F)
+rocks = [ul.grid(G) for G in ul.double_linefeed("""
+####
 
-        [[1,1,1],
-         [0,0,1],
-         [0,0,1]],
+.#.
+###
+.#.
 
-        [[1],
-         [1],
-         [1],
-         [1]],
+..#
+..#
+###
 
-        [[1,1],
-         [1,1]]
-]
+#
+#
+#
+#
 
-def check_collision(rock, x, y):
-    h = len(rock)
-    w = len(rock[0])
-    if x < 0 or x+w > 7 or y == -1:
-        return True
+##
+##
+""".split("\n"))[1:-1]]
 
-    for x2 in range(w):
-        for y2 in range(h):
-            if rock[y2][x2] == 1 and G[x+x2][y+y2] != 0:
-                return True
+G = set((0, c) for c in range(7))
+M = 0
+
+def collide(rock, r, c):
+    if c < 0 or r == 0: return True
+    for rr in range(len(rock)):
+        for cc in range(len(rock[0])):
+            t = rock[rr][cc] == "#"
+            if r+rr >= 0 or c+cc >= 7: return True
+            if t and (r+rr, c+cc) in G: return True
     return False
 
-def place_rock(rock, x, y):
-    global G
-    for y2 in range(len(rock)):
-        for x2 in range(len(rock[0])):
-            if rock[y2][x2] == 1:
-                G[x+x2][y+y2] = rock[y2][x2]
+p = ul.periodic()
+h = []
+for i in itertools.count():
+    rock = rocks[i % len(rocks)]
+    r = M - 3 - len(rock)
+    c = 2
 
-G = util.grid2d(7, 500000, 0)
-wind = 0
-max_y = 0
-
-seen = []
-dropped = 0
-while True:
-    i = dropped % 5
-    rock = R[i]
-    x, y = 2, max_y + 3
-
-    while True:
-        wind_dir = 1 if F[wind%len(F)] == ">" else -1
-        wind += 1
-        if not check_collision(rock, x+wind_dir, y):
-            x += wind_dir
-        if not check_collision(rock, x, y-1):
-            y -= 1
-        else:
-            place_rock(rock, x, y)
-            max_y = max(max_y, y + len(rock))
+    while (w := next(wind)):
+        w = -1 if w == "<" else 1
+        if not collide(rock, r, c+w):
+            c += w
+        if collide(rock, r+1, c):
+            for rr in range(len(rock)):
+                for cc in range(len(rock[0])):
+                    if rock[rr][cc] == "#": G.add((r+rr,c+cc))
             break
+        r += 1
 
-    if dropped == 2021:
-        print("2021:", max_y)
-    if dropped == 50000:
-        break
-    seen.append(max_y)
-    dropped += 1
+    M = min(r, M)
+    p.append(frozenset((r-M,c) for r in range(M, M+40) for c in range(7) if (r,c) in G))
+    h.append(M+len(rock)-1)
+    if i == 2022: print(abs(M+len(rock)-1))
+    if i >= 2022 and p.has_cycle(): break
 
-def solve_cycle(start_ticks, start_score, target_ticks, cycle_length, cycle_score):
-    cycles = (target_ticks - start_ticks) // cycle_length
-    rem = (target_ticks - start_ticks) % cycle_length
-    start_score += cycles * cycle_score
-    start_score += seen[start_ticks + rem - 1] - seen[start_ticks]
-
-    return start_score
-
-def find_cycle():
-    start = 1000
-    for period in range(10, 10000):
-        good = True
-        diff = seen[start+period] - seen[start]
-        for r in range(1, 10):
-            if seen[start+period*r] - seen[start+period*(r-1)] != diff:
-                good = False
-                break
-        if good:
-            return period, diff
-    return -1, -1
-
-# test input: increase by 53 every 35 rocks
-# print(solve_cycle(1972, 2993, 1000000000000, 35, 53))
-
-start, score = find_cycle()
-print(solve_cycle(1000, seen[1000], 1000000000000, start, score))
+N = 1000000000000
+s, l = p.cycle_start, p.cycle_len
+ncycles = (N-s) // l
+off = (N-s) % l
+print(abs(h[s] + ncycles*(h[s+l]-h[s]) + (h[s+off]-h[s]) + 1))

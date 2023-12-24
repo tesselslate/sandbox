@@ -1,74 +1,44 @@
-import collections, util
-from sys import argv
+import functools, math, re, string, itertools, ul
+from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
 
-F = [l.strip() for l in open(argv[1])]
-G = util.graph()
-flow = {}
+F = ul.input()
+V = set()
+R = {}
+D = defaultdict(lambda: defaultdict(lambda: math.inf))
 
 for l in F:
-    a, b, c = None, None, None
-    if "valves" in l:
-        a, b, c = util.scan("Valve %s has flow rate=%d; tunnels lead to valves %s", l)
-    else:
-        a, b, c = util.scan("Valve %s has flow rate=%d; tunnel leads to valve %s", l)
-    for w in c.split(" "):
-        G.add_edge(a, w.strip(","))
-    flow[a] = b
+    v, r, xs = ul.scan("Valve %s has flow rate=%d; %s", l)
+    V.add(v)
+    R[v] = r
+    for n in [x.strip(", ") for x in xs.split()[4:]]:
+        D[v][n] = 1
 
-valves = {k for k in flow.keys() if flow[k] > 0}
-visitable = {}
-for valve in valves | {"AA"}:
-    Q = collections.deque([(valve, 0)])
-    V = {}
-    while len(Q) > 0:
-        E = Q.popleft()
-        V[E[0]] = E[1]
-        for next in G.dependents(E[0]):
-            if next in V:
-                continue
-            V[next] = E[1]+1
-            Q.append((next,E[1]+1)) # type: ignore
-    visitable[valve] = {}
-    for key in V:
-        if key in valves and key != valve:
-            visitable[valve][key] = V[key]
+for b, a, c in itertools.product(V, repeat=3):
+    D[a][c] = min(D[a][c], D[a][b] + D[b][c])
 
-def walk(total, ticks, opened, c):
-    global M
-    if ticks <= 0:
-        return
+@functools.cache
+def pressure(current, opened, time):
+    if time == 0: return 0
 
-    # go to next valves
-    for v in valves - opened:
-        new_ticks = ticks - visitable[c][v] - 1
-        val = total + (new_ticks)*flow[v]
-        M = max(M, val)
-        walk(val, new_ticks, opened | {v}, v)
+    max_score = 0
+    for (next, dist) in D[current].items():
+        if next in opened or not R[next]: continue
+        if time-dist > 0:
+            ntime = time-dist-1
+            max_score = max(max_score, pressure(next, frozenset(opened | {next}), ntime) + ntime*R[next])
+    return max_score
+print(pressure("AA", frozenset(), 30))
 
-def gen_paths(visited, current, score, ticks, d):
-    if ticks <= 0:
-        return
+P = defaultdict(int)
+def gen_paths(current, opened, time, score):
+    P[opened] = max(P[opened], score)
+    if time == 26: return
 
-    for v in valves - visited:
-        new_ticks = ticks - visitable[current][v] - 1
-        new_score = score + new_ticks * flow[v]
-        new_path = visited | {v}
-        if new_path not in d or d[new_path] < new_score:
-            d[new_path] = new_score
-        gen_paths(new_path, v, new_score, new_ticks, d)
-
-M = 0
-walk(0, 30, set(), "AA")
-print(M)
-
-P = {}
-M = 0
-gen_paths(frozenset(), "AA", 0, 26, P)
-for p, s in P.items():
-    paths = {}
-    gen_paths(p, "AA", 0, 26, paths)
-    for path, score in paths.items():
-        if s + score > M:
-            print(s+score)
-            M = s+score
-print(M)
+    for (next, dist) in D[current].items():
+        if next in opened or not R[next]: continue
+        if time+dist < 26:
+            ntime = time+dist+1
+            gen_paths(next, frozenset(opened | {next}), ntime, score + (26-ntime)*R[next])
+gen_paths("AA", frozenset(), 0, 0)
+print(max(pressure("AA", p, 26) + s for (p, s) in P.items()))
