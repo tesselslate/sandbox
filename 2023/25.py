@@ -1,63 +1,52 @@
-import functools, math, re, string, itertools, ul
-from dataclasses import dataclass
+import math, random, ul
 from collections import Counter, defaultdict, deque
 
 F = ul.input()
 
 G = defaultdict(set)
-p = set()
 for l in F:
     w = l.split()
     a = w[0].strip(":")
-    xs = w[1:]
-    for x in xs:
+    for x in w[1:]:
         G[a].add(x)
         G[x].add(a)
-        p.add((a,x))
-G = dict(G)
 
-# import graphviz
-# d = graphviz.Graph()
-# for k,v in G.items():
-#     d.node(k)
-#     for x in v:
-#         d.edge(k, x)
-# d.engine = 'neato'
-# d.render('d.gv', view=True, )
-
-# M = defaultdict(lambda: math.inf)
-# for k, v in G.items():
-#     for x in v:
-#         M[k,x] = 1
-#         M[x,k] = 1
-# for b, a, c in itertools.product(G.keys(), repeat=3):
-#     M[a,c] = min(M[a,c], M[a,b] + M[b,c])
-#
-#
-
-#
-def search(d, start):
-    Q = deque([start])
-    V = set()
+def pathfind(start, goal):
+    Q = deque([(start, [start])])
+    V = set([start])
     while len(Q):
-         k = Q.popleft()
-         xs = d[k]
-         V.add(k)
-         for x in xs:
-             if x not in V: Q.append(x)
+        (k, path) = Q.popleft()
+        if k == goal: return path
+        for next in G[k]:
+            if next not in V:
+                V.add(next)
+                Q.append((next, [n for n in path] + [next]))
+    return None
+
+c = Counter()
+keys = list(G.keys())
+for _ in range(500):
+    a, b = 0, 0
+    while a == b:
+        a, b = random.randint(0,len(keys)-1), random.randint(0,len(keys)-1)
+    path = pathfind(keys[a], keys[b])
+    for node in path: c[node] += 1
+check = c.most_common(6)
+
+def search(start, ignore):
+    start = start[0]
+    Q = deque([start])
+    V = set([start])
+    while len(Q):
+        k = Q.popleft()
+        for next in G[k]:
+            if next not in V and next not in ignore:
+                V.add(next)
+                Q.append(next)
     return V
 
-# rsm, bvc
-# zmq pgh
-# ldk bkm
-
-G['rsm'].remove('bvc')
-G['bvc'].remove('rsm')
-G['zmq'].remove('pgh')
-G['pgh'].remove('zmq')
-G['bkm'].remove('ldk')
-G['ldk'].remove('bkm')
-
-x = search(G, 'rsm')
-y = search(G, 'bvc')
-print(len(x)*len(y))
+counts = set()
+for node in check:
+    counts.add(len(search(node, {node[0] for node in check}))+2)
+print(counts)
+print(math.prod(counts))
