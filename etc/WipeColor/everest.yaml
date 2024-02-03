@@ -1,0 +1,3 @@
+- Name: WipeColor
+  Version: 1.0.1
+  DLL: WipeColor/bin/Debug/net452/WipeColor.dll

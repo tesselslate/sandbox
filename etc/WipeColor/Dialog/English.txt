@@ -1,0 +1,6 @@
+modoptions_wipecolormodule_title=Wipe Color
+modoptions_wipecolormodule_enabled=Enabled
+modoptions_wipecolormodule_wipecolor=Wipe Color
+modoptions_wipecolormodule_backgroundcolor=Apply to Background
+modoptions_wipecolormodule_applymountainwipe=Always Replace Mountain Wipe
+modoptions_wipecolormodule_applyindebug=Apply to Debug Map

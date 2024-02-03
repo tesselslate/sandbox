@@ -6,6 +6,7 @@ my Advent of Code solutions but I decided to repurpose it.
 
   - [bin](bin/) - small programs
   - [comp](comp/) - "competitive" programming / puzzles
+  - [etc](etc/) - random things that aren't standalone programs
 
 # License
 
