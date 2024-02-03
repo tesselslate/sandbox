@@ -1,0 +1,111 @@
+gamerule commandBlockOutput false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+clear woofdoggo_ command_block
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"Nether\",\"italic\":\"false\",\"color\":\"red\"}\\'}}
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"End\",\"italic\":\"false\",\"color\":\"light_purple\"}\\'}}
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"Chest Carts\",\"italic\":\"false\",\"color\":\"gold\"}\\'}}
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"Gravel\",\"italic\":\"false\",\"color\":\"gray\"}\\'}}
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"Iron\",\"italic\":\"false\",\"color\":\"gray\"}\\'}}
+give woofdoggo_ gray_stained_glass_pane{display:{Name:\\'1\\'}}
+give woofdoggo_ gray_stained_glass_pane{display:{Name:\\'2\\'}}
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"Spawn\",\"italic\":\"false\",\"color\":\"aqua\"}\\'}}
+give woofdoggo_ snowball{display:{Name:\\'{\"text\":\"Nether (0,0)\",\"italic\":\"false\",\"color\":\"red\"}\\'}}
+clear woofdoggo_ gray_stained_glass_pane
+scoreboard objectives add x dummy
+scoreboard objectives add y dummy
+scoreboard objectives add z dummy
+scoreboard objectives add count dummy
+scoreboard players set TARGET count 144
+team add chest
+team modify chest color gold
+setblock ~ 140 ~ repeating_command_block{auto:1b,Command:\\'summon piglin ~ ~3 ~ {Brain:{memories:{\"minecraft:admiring_item\":{value:1b,ttl:1L},}},Attributes:[{Base:0d,Name:\"minecraft:generic.movement_speed\"}],TimeInOverworld:0,Invulnerable:1b,PersistenceRequired:1b,HandItems:[{id:\"minecraft:crossbow\",Count:1b,tag:{Damage:0}},{id:\"minecraft:gold_ingot\",Count:1b}],ArmorItems:[{},{},{},{}],CanPickUpLoot:1b,HurtTime:0s,Inventory:[],Silent:1b}\\'}
+setblock ~ 141 ~ repeating_command_block{auto:1b,Command:\\'tellraw @a [\"Trade \",{\"score\":{\"name\":\"VARIABLE\",\"objective\":\"count\"}},\" \",{\"nbt\":\"Item.id\",\"entity\":\"@e[type=item,distance=2..7,limit=1]\",\"color\":\"yellow\"},\" \",{\"nbt\":\"Item.Count\",\"entity\":\"@e[type=item,distance=2..7,limit=1]\",\"color\":\"yellow\"}]\\'}
+setblock ~ 142 ~ repeating_command_block{auto:1b,Command:\\'kill @e[type=item,distance=0..5]\\'}
+setblock ~ 150 ~ repeating_command_block{auto:1b,Command:\\'scoreboard players add VARIABLE count 1\\'}
+setblock ~ 151 ~ repeating_command_block{auto:1b,Command:\\'execute if score VARIABLE count = TARGET count run fill ~ 140 ~ ~ 142 ~ air\\'}
+setblock ~ 152 ~ repeating_command_block{auto:1b,Command:\\'execute if score VARIABLE count = TARGET count run kill @e[type=piglin,distance=0..30]\\'}
+setblock ~ 160 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Nether\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"red\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 161 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~ 162 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~ 163 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~ 165 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Built nether portal at (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"dark_aqua\"}]\\'}
+setblock ~ 164 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute at woofdoggo_ run setblock ~ ~ ~ nether_portal\"}
+setblock ~ 170 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"End\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"light_purple\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 171 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~ 172 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~ 173 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~ 174 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Teleported to end from (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"dark_aqua\"}]\\'}
+setblock ~ 175 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute at woofdoggo_ run setblock ~ ~ ~ end_portal\"}
+setblock ~ 180 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Chest Carts\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"gold\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 181 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"team join chest @e[type=chest_minecart]\"}
+setblock ~ 182 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute as @e[type=chest_minecart] run data merge entity @s {Glowing:1b}\"}
+setblock ~ 190 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Iron\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"gray\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 191 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute at woofdoggo_ run fill ~-15 ~-15 ~-15 ~15 ~15 ~15 ender_chest replace iron_ore\"}
+setblock ~ 192 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a {\"text\":\"Iron nearby\",\"color\":\"green\"}\\'}
+setblock ~ 200 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Nether (0,0)\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"red\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 201 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~ 202 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~ 203 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~ 204 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute in the_nether positioned 0 64 0 run tp woofdoggo_ ~ ~ ~\"}
+setblock ~ 205 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Teleported to nether from (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\")\"]\\'}
+setblock ~ 210 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Gravel\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"gray\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 211 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute at woofdoggo_ run fill ~-15 ~-15 ~-15 ~15 ~15 ~15 chest replace gravel\"}
+setblock ~ 212 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a {\"text\":\"Gravel nearby\",\"color\":\"green\"}\\'}
+setblock ~ 220 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Spawn\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"aqua\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 221 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'kill woofdoggo_\\'}
+setblock ~ 230 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Set Point\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"green\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 231 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"pearlpoint\"]}\\'}
+setblock ~ 232 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'kill @e[type=armor_stand,tag=pearlpoint]\\'}
+setblock ~ 233 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"pearlpoint\"]}\\'}
+setblock ~ 234 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~ 235 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~ 236 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~ 237 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Set \",{\"text\":\"Pearl Point\",\"color\":\"blue\"},\" to (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"aqua\"}]\\'}
+setblock ~ 238 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run forceload add ~ ~\\'}
+setblock ~ 240 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Back\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"red\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~ 241 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at @e[type=armor_stand,tag=pearlpoint,limit=1] run tp woofdoggo_ ~ ~-256 ~\\'}
+setblock ~5 150 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Point 1\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"blue\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 151 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~5 152 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~5 153 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~5 154 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Set \",{\"text\":\"Point 1\",\"color\":\"blue\"},\" to (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"aqua\"}]\\'}
+setblock ~5 155 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point1\"]}\\'}
+setblock ~5 156 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'kill @e[type=armor_stand,tag=point1]\\'}
+setblock ~5 157 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point1\"]}\\'}
+setblock ~5 158 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run forceload add ~ ~\\'}
+setblock ~5 160 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Point 2\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"blue\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 161 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~5 162 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~5 163 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~5 164 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Set \",{\"text\":\"Point 2\",\"color\":\"blue\"},\" to (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"aqua\"}]\\'}
+setblock ~5 165 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point2\"]}\\'}
+setblock ~5 166 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'kill @e[type=armor_stand,tag=point2]\\'}
+setblock ~5 167 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point2\"]}\\'}
+setblock ~5 168 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run forceload add ~ ~\\'}
+setblock ~5 170 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Point 3\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"blue\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 171 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~5 172 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~5 173 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~5 174 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Set \",{\"text\":\"Point 3\",\"color\":\"blue\"},\" to (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"aqua\"}]\\'}
+setblock ~5 175 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point3\"]}\\'}
+setblock ~5 176 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'kill @e[type=armor_stand,tag=point3]\\'}
+setblock ~5 177 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point3\"]}\\'}
+setblock ~5 178 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run forceload add ~ ~\\'}
+setblock ~5 180 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Point 4\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"blue\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 181 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ x run data get entity woofdoggo_ Pos[0]\"}
+setblock ~5 182 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ y run data get entity woofdoggo_ Pos[1]\"}
+setblock ~5 183 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\"execute store result score woofdoggo_ z run data get entity woofdoggo_ Pos[2]\"}
+setblock ~5 184 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'tellraw @a [\"\",\"Set \",{\"text\":\"Point 4\",\"color\":\"blue\"},\" to (\",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"x\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"y\"},\"color\":\"gold\"},\", \",{\"score\":{\"name\":\"woofdoggo_\",\"objective\":\"z\"},\"color\":\"gold\"},\") in \",{\"nbt\":\"Dimension\",\"entity\":\"woofdoggo_\",\"color\":\"aqua\"}]\\'}
+setblock ~5 185 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point4\"]}\\'}
+setblock ~5 186 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'kill @e[type=armor_stand,tag=point4]\\'}
+setblock ~5 187 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run summon armor_stand ~ ~256 ~ {Invisible:1,Invulnerable:1,NoAI:1,NoGravity:1,Tags:[\"point4\"]}\\'}
+setblock ~5 188 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at woofdoggo_ run forceload add ~ ~\\'}
+setblock ~5 190 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Return 1\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"green\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 191 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at @e[type=armor_stand,tag=point1] run tp woofdoggo_ ~ ~-256 ~\\'}
+setblock ~5 200 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Return 2\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"green\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 201 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at @e[type=armor_stand,tag=point2] run tp woofdoggo_ ~ ~-256 ~\\'}
+setblock ~5 210 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Return 3\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"green\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 211 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at @e[type=armor_stand,tag=point3] run tp woofdoggo_ ~ ~-256 ~\\'}
+setblock ~5 220 ~ repeating_command_block[facing=up]{auto:1b,Command:\"kill @e[type=snowball,nbt={Item:{tag:{display:{Name:\\\\\"{\\\\\\\\\\\\\"text\\\\\\\\\\\\\":\\\\\\\\\\\\\"Return 4\\\\\\\\\\\\\",\\\\\\\\\\\\\"italic\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"color\\\\\\\\\\\\\":\\\\\\\\\\\\\"green\\\\\\\\\\\\\"}\\\\\"}}}}]\"}
+setblock ~5 221 ~ chain_command_block[conditional=true,facing=up]{auto:1b,Command:\\'execute at @e[type=armor_stand,tag=point4] run tp woofdoggo_ ~ ~-256 ~\\'}
