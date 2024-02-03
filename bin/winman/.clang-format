@@ -1,0 +1,4 @@
+# vim:ft=yaml
+AllowShortFunctionsOnASingleLine: Empty
+IndentWidth: 4
+SortIncludes: true
