@@ -40,7 +40,7 @@ func BenchmarkBinaryMarshalUint32(b *testing.B) {
 func BenchmarkUnsafeMarshalUint32(b *testing.B) {
 	data := makeRandomU32(N_marshalU32)
 	buf := make([]byte, N_marshalU32*4)
-    _ = data[7]
+	_ = data[7]
 
 	for i := 0; i < b.N; i += 1 {
 		*(*uint32)(unsafe.Pointer(&buf[0])) = data[0]
