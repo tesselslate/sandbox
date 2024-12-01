@@ -10,17 +10,9 @@ for l in F:
     a.append(xs[0])
     b.append(xs[1])
 
-S = 0
-for x, y in zip(sorted(a), sorted(b)):
-    S += abs(x - y)
-print(S)
-
-D = defaultdict(int)
+C = Counter()
 for x in b:
-    D[x] += 1
+    C[x] += 1
 
-S = 0
-for x in a:
-    S += x * D[x]
-
-print(S)
+print(sum([abs(a-b) for (a, b) in zip(sorted(a), sorted(b))]))
+print(sum([x * C[x] for x in a]))
