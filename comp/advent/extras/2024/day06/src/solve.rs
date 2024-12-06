@@ -77,20 +77,31 @@ fn parse(input: &str) -> ((isize, isize), Grid) {
     (start_pos.expect("no start pos"), grid)
 }
 
+#[inline(always)]
+fn rotate(mut x: (isize, isize)) -> (isize, isize) {
+    let x0 = x.0;
+    x.0 = x.1;
+    x.1 = -x0;
+    return x;
+}
+
 fn navigate(grid: &Grid, mut pos: (isize, isize), mut dir: usize, visited: &mut Visited) -> bool {
+    let mut dd = DIRS[dir];
+
     loop {
         if visited.contains(dir, pos) {
             return true;
         }
         visited.mark(dir, pos);
 
-        let new = (pos.0 + DIRS[dir].0, pos.1 + DIRS[dir].1);
+        let new = (pos.0 + dd.0, pos.1 + dd.1);
         if new.0 < 0 || new.1 < 0 || new.0 >= LEN as isize || new.1 >= LEN as isize {
             return false;
         }
 
         if grid.get(new) {
             dir = (dir + 1) % 4;
+            dd = rotate(dd);
         } else {
             pos = new;
         }
@@ -104,6 +115,7 @@ fn find_obstructions(grid: &mut Grid, start: (isize, isize)) -> u32 {
 
     let mut pos = start;
     let mut dir = 0;
+    let mut dd = DIRS[0];
 
     loop {
         if visited.contains(dir, pos) {
@@ -116,13 +128,14 @@ fn find_obstructions(grid: &mut Grid, start: (isize, isize)) -> u32 {
         let bit = x % 64;
         visited_any[idx] |= 1 << bit;
 
-        let new = (pos.0 + DIRS[dir].0, pos.1 + DIRS[dir].1);
+        let new = (pos.0 + dd.0, pos.1 + dd.1);
         if new.0 < 0 || new.1 < 0 || new.0 >= LEN as isize || new.1 >= LEN as isize {
             return obstructions.iter().map(|u64| u64.count_ones()).sum();
         }
 
         if grid.get(new) {
             dir = (dir + 1) % 4;
+            dd = rotate(dd);
         } else {
             let x = (new.0 * LEN as isize + new.1) as usize;
             let idx = x / 64;
@@ -147,7 +160,7 @@ pub fn run(input: &str, runs: usize) -> Vec<Duration> {
     let mut durations = Vec::new();
     for _ in 0..runs {
         let start = Instant::now();
-        find_obstructions(&mut grid, start_pos);
+        let value = find_obstructions(&mut grid, start_pos);
         durations.push(Instant::now().duration_since(start));
     }
     durations
