@@ -196,11 +196,11 @@ def padj8():
 
 def pccw(x, y):
     """Rotate 2d point (integers) counter-clockwise around the origin"""
-    return y, -x
+    return -y, x
 
 def pcw(x, y):
     """Rotate 2d point (integers) clockwise around the origin"""
-    return -y, x
+    return y, -x
 
 """
 N-dimensional functions
