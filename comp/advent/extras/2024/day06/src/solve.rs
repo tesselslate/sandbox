@@ -89,17 +89,17 @@ fn navigate(grid: &Grid, mut pos: (isize, isize), mut dir: usize, visited: &mut 
     let mut dd = DIRS[dir];
 
     loop {
-        if visited.contains(dir, pos) {
-            return true;
-        }
-        visited.mark(dir, pos);
-
         let new = (pos.0 + dd.0, pos.1 + dd.1);
         if new.0 < 0 || new.1 < 0 || new.0 >= LEN as isize || new.1 >= LEN as isize {
             return false;
         }
 
         if grid.get(new) {
+            if visited.contains(dir, pos) {
+                return true;
+            }
+            visited.mark(dir, pos);
+
             dir = (dir + 1) % 4;
             dd = rotate(dd);
         } else {
@@ -161,6 +161,7 @@ pub fn run(input: &str, runs: usize) -> Vec<Duration> {
     for _ in 0..runs {
         let start = Instant::now();
         let value = find_obstructions(&mut grid, start_pos);
+        std::hint::black_box(value);
         durations.push(Instant::now().duration_since(start));
     }
     durations
