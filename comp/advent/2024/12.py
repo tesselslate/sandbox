@@ -36,35 +36,25 @@ for (r,c) in ul.gridpoints(G):
     S1 += len(V) * sum(len(x) for x in P.values())
 
     PV = set()
-    PN = 0
+    P2 = 0
 
-    for (r, c) in P:
-        visited_from = P[(r,c)]
+    for (dr, dc) in ul.padj4():
+        for (r, c) in P:
+            if (r, c, dr, dc) in PV: continue
+            if (dr, dc) not in P[(r,c)]: continue
 
-        for entry_dir in visited_from:
-            if (r, c, entry_dir) in PV: continue
+            Q = deque([(r,c)])
+            PV.add((r, c, dr, dc))
+            while len(Q):
+                r, c = Q.popleft()
+                for (rr, cc) in ul.padj4():
+                    nr, nc = r + rr, c + cc
+                    if (nr, nc) in P and (dr, dc) in P[(nr, nc)] and (nr, nc, dr, dc) not in PV:
+                        PV.add((nr, nc, dr, dc))
+                        Q.append((nr, nc))
+            P2 += 1
 
-            rr, cc = ul.pcw(*entry_dir)
-            nr, nc = r, c
-
-            PV.add((nr, nc, entry_dir))
-
-            while (nr, nc) in P and entry_dir in P[(nr,nc)]:
-                nr += rr
-                nc += cc
-                PV.add((nr, nc, entry_dir))
-
-            nr -= rr
-            nc -= cc
-
-            while (nr, nc) in P and entry_dir in P[(nr,nc)]:
-                nr -= rr
-                nc -= cc
-                PV.add((nr, nc, entry_dir))
-
-            PN += 1
-
-    S2 += len(V) * PN
+    S2 += len(V) * P2
 
 print(S1)
 print(S2)
