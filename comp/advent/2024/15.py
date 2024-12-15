@@ -4,153 +4,119 @@ from collections import Counter, defaultdict, deque
 
 F = ul.double_linefeed(ul.input())
 G = ul.grid(F[0])
-
 M = "".join(F[1])
 
-NG = []
-for r in G:
-    a = []
-    for c in r:
-        if c == "#":
-            a.append("#")
-            a.append("#")
-        elif c == "O":
-            a.append("[")
-            a.append("]")
-        elif c == ".":
-            a.append(".")
-            a.append(".")
-        else:
-            a.append("@")
-            a.append(".")
-    NG.append(a)
-G = NG
-
-sr, sc = 0,0
-for (r,c) in ul.gridpoints(G):
-    if G[r][c] == "@":
-        sr,sc = r,c
-        G[r][c] = "."
-        break
-
-OC = 0
-for (r,c)in ul.gridpoints(G):
-    if G[r][c] == "O": OC += 1
-
 dirs = {
-        "^": (-1, 0),
-        "v": (1,0),
-        "<": (0,-1),
-        ">": (0,1),
+    "^": (-1, 0),
+    "v": (1, 0),
+    "<": (0, -1),
+    ">": (0, 1),
 }
 
-def move(pt, d):
-    return (pt[0] + d[0], pt[1] + d[1])
+def move(p, d):
+    return (p[0] + d[0], p[1] + d[1])
 
-def pgrid():
-    for r in range(len(G)):
-        assert G[sr][sc] == "."
-        G[sr][sc] = "@"
-        print("".join(G[r]))
-        G[sr][sc] = "."
-    print("\n\n\n\n\n")
+walls = set()
+boxes = set()
+robot = None
 
-def canpush(pos, vdir):
-    r, c = pos
-    if G[r][c] == "#": return False
-    if G[r][c] == ".": return True
-    if G[r][c] == "[": # ]
-        return canpush((r+vdir,c), vdir) and canpush((r+vdir,c+1), vdir)
-    else:
-        assert G[r][c] == "]"
-        return canpush((r+vdir,c-1), vdir) and canpush((r+vdir,c), vdir)
-
-def pushv(pos, vdir, pushed):
-    r, c = pos
-
-    if pos in pushed: return
-    pushed.add(pos)
-    print("push", r, c)
-    # pgrid()
-
-    if G[r][c] == "[": # ]
-        pushv((r+vdir, c), vdir, pushed)
-        pushv((r+vdir, c+1), vdir, pushed)
-        G[r+vdir][c] = "[" #]
-        G[r+vdir][c+1] = "]"
-        G[r][c] = "."
-        G[r][c+1] = "."
-    elif G[r][c] == "]":
-        pushv((r+vdir, c), vdir, pushed)
-        pushv((r+vdir, c-1), vdir, pushed)
-        G[r+vdir][c] = "]"
-        G[r+vdir][c-1] = "[" #]
-        G[r][c] = "."
-        G[r][c-1] = "."
-    else:
-        assert G[r][c] == "."
-
-def push(pos, dir):
-    global G
-    pgrid()
-    op = pos
-    if dir[0] == 0:
-        # horz
-        count = 0
-        while G[pos[0]][pos[1]] == "[" or G[pos[0]][pos[1]] == "]":
-            pos = move(pos, dir)
-            count += 1
-        if G[pos[0]][pos[1]] == "#": return False
-        print(count)
-
-        pos = op
-
-        if dir[1] == 1:
-            # right
-            G[pos[0]][pos[1]+1:pos[1]+count+1] = G[pos[0]][pos[1]:pos[1]+count]
-            G[pos[0]][pos[1]] = "."
-            print(pos[1] + count + 1)
-            # for c in range(pos[1] + count + 1, pos[1], -1):
-            #     G[pos[0]][c] = G[pos[0]][c-1]
-        else:
-            # left
-            G[pos[0]][pos[1]-count:pos[1]] = G[pos[0]][pos[1]-count+1:pos[1]+1]
-            G[pos[0]][pos[1]] = "."
-            print(pos[1] - count)
-            # for c in range(pos[1] - count, pos[1]):
-            #     G[pos[0]][c] = G[pos[0]][c+1]
-    else:
-        # vert
-        ok = canpush(pos, dir[0])
-        if not ok: return False
-
-        pushv(pos, dir[0], set())
-    print(sr,sc,d, m)
-    #pgrid()
-    return True
+for (r, c) in ul.gridpoints(G):
+    x = G[r][c]
+    if x == "@":
+        robot = (r, c)
+    elif x == "#":
+        walls.add((r, c))
+    elif x == "O":
+        boxes.add((r, c))
 
 for m in M:
-    d = dirs[m]
+    dir = dirs[m]
+    pos = move(robot, dir)
 
-    r, c = move((sr, sc), d)
-    if G[r][c] == "#": continue
-    if G[r][c] == "[" or G[r][c] == "]":
-        if push((r, c), d):
-            sr, sc = r, c
-    else:
-        sr, sc = r, c
+    if pos in walls: continue
+    if pos in boxes:
+        push = set()
 
-    print("step", sr, sc, d, m)
-    # print(sr,sc,d, m)
-    # pgrid()
+        while pos in boxes:
+            push.add(pos)
+            pos = move(pos, dir)
+        if pos in walls: continue
 
-S = 0
-print(OC)
-OC = 0
-for (r,c) in ul.gridpoints(G):
-    if G[r][c] == "[":
-        S += (r)*100 + c
-        OC += 1
+        for box in push: boxes.remove(box)
+        for box in push: boxes.add(move(box, dir))
 
-print(S)
-print(OC)
+    robot = move(robot, dir)
+
+print(sum(r * 100 + c for (r, c) in boxes))
+
+def pushv(pos, vdir):
+    Q = deque([pos])
+
+    move_l = set()
+    move_r = set()
+
+    if pos in lbox: Q.append(move(pos, (0, 1)))
+    else: Q.append(move(pos, (0, -1)))
+
+    while len(Q):
+        r, c = Q.popleft()
+        if (r, c) in walls:
+            return False
+        elif (r, c) in lbox and (r,c) not in move_l:
+            move_l.add((r, c))
+            Q.append(move((r, c), (vdir, 0)))
+            Q.append(move((r, c), (0, 1)))
+        elif (r, c) in rbox and (r,c) not in move_r:
+            move_r.add((r, c))
+            Q.append(move((r, c), (vdir, 0)))
+            Q.append(move((r, c), (0, -1)))
+
+    for box in move_l: lbox.remove(box)
+    for box in move_l: lbox.add(move(box, (vdir, 0)))
+    for box in move_r: rbox.remove(box)
+    for box in move_r: rbox.add(move(box, (vdir, 0)))
+
+    return True
+
+walls = set()
+rbox = set()
+lbox = set()
+robot = None
+
+for (r, c) in ul.gridpoints(G):
+    x = G[r][c]
+    if x == "@":
+        robot = (r, c * 2)
+    elif x == "#":
+        walls |= {(r, c * 2), (r, c * 2 + 1)}
+    elif x == "O":
+        lbox.add((r, c * 2))
+        rbox.add((r, c * 2 + 1))
+
+for m in M:
+    dir = dirs[m]
+    pos = move(robot, dir)
+
+    if pos in walls: continue
+    if pos in lbox or pos in rbox:
+        if dir[0] == 0: # horizontal push
+            push = set()
+
+            while pos in lbox or pos in rbox:
+                push.add((pos, pos in lbox))
+                pos = move(pos, dir)
+            if pos in walls: continue
+
+            for box, left in push:
+                if left:
+                    lbox.remove(box)
+                    lbox.add(move(box, dir))
+                else:
+                    rbox.remove(box)
+                    rbox.add(move(box, dir))
+        else: # vertical push
+            if not pushv(pos, dir[0]): continue
+
+    robot = move(robot, dir)
+
+print(sum(r * 100 + c for (r, c) in lbox))
