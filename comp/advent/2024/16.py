@@ -5,42 +5,33 @@ from collections import Counter, defaultdict, deque
 F = ul.input()
 G = ul.grid(F)
 
-start = None
-end = None
-for (r,c) in ul.gridpoints(G):
-    if G[r][c] == "S":
-        start = (r,c)
-    elif G[r][c] == "E":
-        end = (r,c)
-
-def mkpath(pos):
-    return [pos]
-
-print(start,end)
-import heapq
 dir = (0, 1)
-Q = [(0, start, dir, mkpath(dir))]
-V = defaultdict(lambda: 10**9)
-VV = list()
+start, end = None, None
+for (r,c) in ul.gridpoints(G):
+    if G[r][c] == "S": start = (r,c)
+    if G[r][c] == "E": end = (r,c)
+
+P = set()
+Q = ul.pq([(0, start, dir, [start])])
+V = defaultdict(lambda: math.inf)
 while len(Q):
-    dist, pos, dir, path = heapq.heappop(Q)
-    if V[(pos,dir)] < dist: continue
-    V[(pos,dir)] = dist
+    dist, pos, dir, path = Q.pop()
+
+    if V[(pos, dir)] < dist: continue
+    V[(pos, dir)] = dist
+
     r, c = pos
-
     if pos == end:
-        print(dist)
-        VV.append(path)
+        V[pos] = dist
+        P |= set(path)
+        continue
 
-    for (rr,cc) in ul.padj4():
-        #if rr == -dir[0] or cc == -dir[1]: continue
-        cost = 0 if (rr,cc) == dir else 1000
+    for (rr, cc) in ul.padj4():
+        cost = 1 if (rr, cc) == dir else 1001
         nr, nc = r+rr, c+cc
 
-        if G[nr][nc] == "." or G[nr][nc] == "E":
-            heapq.heappush(Q, (dist+cost+1,(nr,nc),(rr,cc), path + mkpath((nr,nc))))
+        if G[nr][nc] != "#":
+            Q.push((dist + cost, (nr,nc), (rr,cc), path + [(nr, nc)]))
 
-vs = set()
-for path in VV:
-    for (r,c) in path: vs.add((r,c))
-print(len(vs))
+print(V[end])
+print(len(P))
