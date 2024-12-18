@@ -45,10 +45,11 @@ def run(A, B, C):
 
 print(",".join([str(x) for x in run(A, B, C)]))
 
-def dfs(A):
+def dfs(A, i=0):
+    if i > 20: return
     for j in range(8):
         out = run(A * 8 + j, B, C)
         if out == PROG[len(PROG)-len(out):]:
             if out == PROG: print(A * 8 + j); exit()
-            dfs(A * 8 + j)
+            dfs(A * 8 + j, i + 1)
 dfs(0)
