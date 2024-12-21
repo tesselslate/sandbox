@@ -1,0 +1,52 @@
+789
+456
+123
+ 0A
+
+ ^A
+<v>
+
+PRESS LEFT:
+2   v                           <                           <                           A
+1   v       <       A           <       A                   A                           >       >       ^       A
+0   v<A     <A      >>^A        v<<A    >>^A                v<<A                        >>A     A       ^<A     >A
+
+PRESS RIGHT:
+1   v       A
+2   v<A     >^A
+3   v<A
+
+413A:
+^^<<AvA>>AvA
+<AAv<AA>>^Av<A>^AvAA^Av<A
+v<<A>>^AAv<A<A>>^AAvAA^<A>Av<A<A>>^AvA^<A>Av<A>^AA<A>Av<A<A>>^A
+
+480A:
+^^<<A^>AvvvA>A
+<AAv<AA>>^A<Av>A^Av<AAA>^AvA^A
+v<<A>>^AAv<A<A>>^AAvAA^<A>Av<<A>>^Av<A>A^A<A>Av<A<A>>^AAAvA^<A>Av<A>^A<A>A
+
+682A
+^^A^<AvvAv>A
+<AA>A<Av<A>>^A<vAA>^A<vA>A^A
+v<<A>>^AAvA^Av<<A>>^Av<A<A>>^AvAA^<A>Av<<A>A>^AAvA^<A>Av<<A>A>^AvA^A<A>A
+
+879A
+^^^<A<A>>AvvvA
+<AAAv<A>>^Av<<A>>^AvAA^Av<AAA>^A
+v<<A>>^AAAv<A<A>>^AvAA^<A>Av<A<AA>>^AvAA^<A>Av<A>^AA<A>Av<A<A>>^AAAvA^<A>A
+
+083A
+<A^^^A>vvAvA
+v<<A>>^A<AAA>AvA<AA>^Av<A>^A
+v<A<AA>>^AvAA^<A>Av<<A>>^AAAvA^Av<A>^Av<<A>>^AAvA^<A>Av<A<A>>^AvA^<A>A
+
+
+
+
+
+
+^<A <Av<A>>^A   v<<A>>^Av<A<A>>^AvAA^<A>A v<A<AA>>^AvAA^<A>Av<A<A>>^Av<<A>>^AvAA^<A>Av<A>^AA<A>vA^A
+
+<^A v<<A>^A>A   v<A<AA>>^AvA^<A>AvA^A
+
