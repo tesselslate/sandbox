@@ -33,9 +33,6 @@ def evaluate(dst):
 zbits = [evaluate(f"z{i:#02}") for i in reversed(range(46))]
 print(int("".join(str(z) for z in zbits), base=2))
 
-# dkr,ggk,hhh,htp,rhv,z05,z15,z20
-# colors = {"AND": "red", "OR": "green", "XOR": "blue"}
-
 swaps = []
 
 bad_z = []
