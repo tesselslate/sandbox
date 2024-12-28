@@ -17,39 +17,18 @@ int main() {
             cin >> A[j];
         }
 
-        vector<ll> DP(N, -1);
+        bool ok = false;
+        for (int i = 0; i < N-1; i++) {
+            auto min = std::min(A[i], A[i+1]);
+            auto max = std::max(A[i], A[i+1]);
 
-        auto is_valid = [&](int start, int end) {
-            assert(end > start);
-
-            int min = *min_element(A.begin() + start, A.begin() + end).base();
-            int max = *max_element(A.begin() + start, A.begin() + end).base();
-
-            return (min * 2 > max);
-        };
-
-        function<ll(int)> dfs = [&](int loc) -> ll {
-            if (loc >= N-1) {
-                return 1;
-            } else if (DP[loc] >= 0) {
-                return DP[loc];
+            if (min * 2 > max) {
+                ok = true;
+                break;
             }
+        }
 
-            auto sum = 0;
-
-            for (int j = loc + 1; j <= N; j++) {
-                if (is_valid(loc, j)) {
-                    sum += dfs(j);
-                }
-                if (sum >= 2) {
-                    break;
-                }
-            }
-
-            return sum;
-        };
-
-        if (dfs(0) >= 2) {
+        if (ok) {
             cout << "YES\n";
         } else {
             cout << "NO\n";
