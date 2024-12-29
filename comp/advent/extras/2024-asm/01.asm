@@ -37,6 +37,7 @@ _start:
     call sort_list
 
     call sum_p1                         ; calculate and print part 1 sum
+    call sum_p2                         ; calculate and print part 2 sum
 
 .exit:
     mov rax, 60                         ; syscall id: exit
@@ -177,6 +178,42 @@ sum_p1:
     inc rcx                             ; increment counter (rcx)
     cmp rcx, r8                         ; compare counter against list length
     jne .loop_start                     ; if not equal, continue
+
+.print_result:
+    call print_num
+    ret
+
+
+
+; PARAMETERS:
+;   none
+sum_p2:
+    xor rax, rax                        ; zero accumulator (rax)
+    xor rcx, rcx                        ; zero outer counter (rcx)
+    mov r8, [num_count]                 ; load num count
+    mov r9, left_list                   ; load left list pointer
+    mov r11, right_list                 ; load right list pointer
+
+.loop_outer:
+    mov esi, [r9+4*rcx]                 ; load left list number
+    xor rdx, rdx                        ; zero inner counter (rdx)
+
+.loop_inner:
+    mov edi, [r11+4*rdx]                ; load right list number
+    cmp edi, esi                        ; compare right list number to left list number
+    jg .loop_outer_end                  ; if greater, break; there are no more equal numbers
+    jl .loop_inner_end                  ; if less than, go to the next loop iteration
+    add eax, edi                        ; add left list number to rax
+
+.loop_inner_end:
+    inc rdx                             ; increment inner counter (rdx)
+    cmp rdx, r8                         ; compare inner counter against list length
+    jne .loop_inner                     ; if not equal, continue
+
+.loop_outer_end:
+    inc rcx                             ; increment outer counter (rcx)
+    cmp rcx, r8                         ; compare outer counter against list length
+    jne .loop_outer                     ; if not equal, continue
 
 .print_result:
     call print_num
