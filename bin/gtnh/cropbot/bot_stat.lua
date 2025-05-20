@@ -6,7 +6,6 @@ local robot     = component.robot
 
 -- User imports
 local action    = require("action")
-local cfg       = require("config")
 local db        = require("db")
 local move      = require("move")
 local scan      = require("scan")

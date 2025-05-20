@@ -12,7 +12,7 @@ local pos_table = function()
     end
 
     return setmetatable({}, {
-        __pairs = function(self)
+        __pairs = function(_)
             local pk = nil
 
             return function()
@@ -28,12 +28,12 @@ local pos_table = function()
             end
         end,
 
-        __index = function(self, k)
+        __index = function(_, k)
             assert(type(k) == "table" and #k == 2, "not a position")
 
             return data[get_id(k)]
         end,
-        __newindex = function(self, k, v)
+        __newindex = function(_, k, v)
             assert(type(k) == "table" and #k == 2, "not a position")
 
             data[get_id(k)] = v
@@ -212,7 +212,7 @@ M.scan = function(do_storage)
         end
     end
 
-    local expected = (util.SIZE_BREEDING * util.SIZE_BREEDING) // 2 + 1
+    local expected = math.floor(util.SIZE_BREEDING * util.SIZE_BREEDING / 2) + 1
     if num_breeding ~= expected then
         error("parent slots not filled (" .. tostring(num_breeding) .. "/" .. tostring(expected) .. ")")
     end
@@ -221,7 +221,7 @@ M.scan = function(do_storage)
         storage = pos_table()
         scan_field(storage, util.POS_STORAGE, util.SIZE_STORAGE)
 
-        for k, v in pairs(storage) do
+        for _, v in pairs(storage) do
             if v then
                 storage_slots = storage_slots - 1
                 print("Stored crop: " .. util.str_crop(v))
@@ -254,7 +254,7 @@ end
 -- @param crop_name The name of the crop to check for
 -- @return Whether or not a crop with the given name should be archived
 M.should_archive = function(crop_name)
-    for k, v in pairs(storage) do
+    for _, v in pairs(storage) do
         if type(v) == "table" and v.name == crop_name then
             print("Already stored " .. crop_name)
             return false

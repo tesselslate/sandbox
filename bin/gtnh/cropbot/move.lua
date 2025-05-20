@@ -27,8 +27,8 @@ local facing = {0, -1} -- current facing   ({dx, dz} for 1 forward step)
 -- @param count The number of blocks to move
 -- @raise impossible move
 local step = function(side, count)
-    for i = 1, count do
-        local ok
+    for _ = 1, count do
+        local ok, err
 
         while not ok do
             ok, err = robot.move(side)

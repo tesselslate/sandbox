@@ -3,7 +3,6 @@ local component = require("component")
 local computer  = require("computer")
 local sides     = require("sides")
 
-local geolyzer  = component.geolyzer
 local inv       = component.inventory_controller
 local robot     = component.robot
 local redstone  = component.redstone
@@ -20,6 +19,31 @@ local util      = require("util")
 --
 --]]
 
+--- Trigger the transvector dislocator and set the binder up again.
+-- The robot must already have the transvector binder equipped.
+local dislocate = function()
+    move.to(util.POS_DISLOCATOR)
+    redstone.setOutput(sides.down, 15)
+    redstone.setOutput(sides.down, 0)
+    robot.use(sides.down)
+end
+
+--- Places the specified number of crop sticks below the robot.
+-- @param count The number of crop sticks to place (default: 1)
+local place_sticks = function(count)
+    local pos = move.get_pos()
+
+    if M.restock() then
+        move.to(pos)
+    end
+
+    util.equip_scoped(util.SLOT_CROPS, function()
+        for _ = 1, count do
+            robot.use(sides.down)
+        end
+    end)
+end
+
 --- Performs a robot "use" action beneath the robot while sneaking.
 -- This is primarily used for dislocating crops which may or may not be ready
 -- for harvest.
@@ -29,8 +53,9 @@ end
 
 --- Attempts to move the currently hovered crop to an empty parent slot.
 -- @param pos The current position of the robot
+-- @param crop The crop to move
 -- @return Whether the crop was transplanted
-local transplant_parent = function(pos)
+local transplant_parent = function(pos, crop)
     local slot = db.find_empty_parent()
 
     if not slot then
@@ -40,12 +65,12 @@ local transplant_parent = function(pos)
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
         assert(sneak_down(), "could not bind dislocator to source block")
-        M.dislocate()
+        dislocate()
 
         -- Move the crop to the target location within the breeding field.
         move.to(slot)
         assert(sneak_down(), "could not bind dislocator to destination block")
-        M.dislocate()
+        dislocate()
     end)
 
     db.clear(pos)
@@ -54,7 +79,7 @@ local transplant_parent = function(pos)
     -- Replace the sticks at the source crop's location so a new crop can
     -- crossbreed in its place.
     move.to(pos)
-    M.place_sticks(2)
+    place_sticks(2)
 
     return true
 end
@@ -89,12 +114,12 @@ M.archive = function()
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
         assert(sneak_down(), "could not bind dislocator to source block")
-        M.dislocate()
+        dislocate()
 
         -- Move the crop to the target location within storage.
         move.to(slot)
         assert(sneak_down(), "could not bind dislocator to destination block")
-        M.dislocate()
+        dislocate()
     end)
 
     -- Update the database to reflect the crop's movement.
@@ -187,30 +212,9 @@ M.clear_inventory = function()
     return true
 end
 
---- Trigger the transvector dislocator and set the binder up again.
--- The robot must already have the transvector binder equipped.
-M.dislocate = function()
-    move.to(util.POS_DISLOCATOR)
-    redstone.setOutput(sides.down, 15)
-    redstone.setOutput(sides.down, 0)
-    robot.use(sides.down)
-end
-
 --- Places the specified number of crop sticks below the robot.
 -- @param count The number of crop sticks to place (default: 1)
-M.place_sticks = function(count)
-    local pos = move.get_pos()
-
-    if M.restock() then
-        move.to(pos)
-    end
-
-    util.equip_scoped(util.SLOT_CROPS, function()
-        for _ = 1, count do
-            robot.use(sides.down)
-        end
-    end)
-end
+M.place_sticks = place_sticks
 
 --- Restocks on crop sticks if needed. Does not move the robot back.
 -- @return Whether or not the robot needed to restock
@@ -239,13 +243,13 @@ M.transplant = function()
     -- If there is no inferior parent crop, try to find an empty parent to
     -- transplant this crop into.
     if not slot then
-        return transplant_parent(pos)
+        return transplant_parent(pos, crop)
     end
 
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
         assert(sneak_down(), "could not bind dislocator to source block")
-        M.dislocate()
+        dislocate()
 
         -- Move the crop to the target location within the breeding field,
         -- breaking the previous crop and crop sticks at the target location.
@@ -253,7 +257,7 @@ M.transplant = function()
         M.break_crop()
         M.break_sticks()
         assert(sneak_down(), "could not bind dislocator to destination block")
-        M.dislocate()
+        dislocate()
     end)
 
     db.clear(pos)

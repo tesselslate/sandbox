@@ -7,9 +7,6 @@ local geolyzer  = component.geolyzer
 local inv       = component.inventory_controller
 local robot     = component.robot
 
--- User imports
-local cfg       = require("config")
-
 --[[
 --
 --   Module
