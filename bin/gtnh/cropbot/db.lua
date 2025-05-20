@@ -173,7 +173,7 @@ end
 -- @raise multiple parent crop types found
 -- @raise parent slots not filled
 M.scan = function(do_storage)
-    breeding = {}
+    breeding = pos_table()
     scan_field(breeding, util.POS_BREEDING, util.SIZE_BREEDING)
 
     local num_breeding = 0
@@ -197,7 +197,7 @@ M.scan = function(do_storage)
     end
 
     if do_storage then
-        storage = {}
+        storage = pos_table()
         scan_field(storage, util.POS_STORAGE, util.SIZE_STORAGE)
 
         for k, v in pairs(storage) do
@@ -242,8 +242,5 @@ M.should_archive = function(crop_name)
 
     return storage_slots > 0
 end
-
-M.breeding = breeding
-M.storage  = storage
 
 return M
