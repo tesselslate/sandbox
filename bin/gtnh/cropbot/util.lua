@@ -58,6 +58,14 @@ M.get_crop = function()
     end
 end
 
+--- Initializes the dislocator binder for future use.
+M.init_dislocator = function()
+    M.equip_scoped(M.SLOT_DISLOCATOR, function()
+        move.to(M.POS_DISLOCATOR)
+        robot.use(sides.down)
+    end)
+end
+
 --- Returns a pretty printed string containing the given table's contents.
 -- @param tbl The table to pretty print
 -- @return A string with the table's contents pretty printed

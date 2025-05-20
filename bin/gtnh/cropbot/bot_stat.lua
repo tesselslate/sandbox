@@ -18,10 +18,7 @@ local util      = require("util")
 --]]
 
 -- Bind the dislocator for its first use.
-util.equip_scoped(util.SLOT_DISLOCATOR, function()
-    move.to(util.POS_DISLOCATOR)
-    robot.use(sides.down)
-end)
+util.init_dislocator()
 
 -- Get some crop sticks.
 action.restock()
