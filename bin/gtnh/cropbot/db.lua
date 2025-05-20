@@ -75,6 +75,11 @@ local scan_field = function(tbl, pos, size)
     end)
 end
 
+--- Calculates a score based on the given crop's statistics.
+local score = function(crop)
+    return crop.gr + crop.ga - crop.re
+end
+
 --- Updates the storage_slots value.
 -- @param num The number to adjust storage_slots by
 local shift_storage_slots = function(num)
@@ -120,38 +125,23 @@ M.find_worst = function(comp)
     local crops = {}
     for k, v in pairs(breeding) do
         if type(v) == "table" then
-            table.insert(crops, k)
+            table.insert(crops, {k, score(v)})
         end
     end
 
     assert(#crops, "no parent crops found")
 
-    table.sort(crops, function(pa, pb)
-        a = breeding[pa]
-        b = breeding[pb]
-
-        -- Prefer growth over gain. Prefer lower resistance.
-        if a.gr ~= b.gr then
-            return a.gr < b.gr
-        elseif a.ga ~= b.ga then
-            return a.ga < b.ga
-        elseif a.re ~= b.re then
-            return a.re > b.re
-        else
-            local da = math.abs(pa[1]) + math.abs(pa[2])
-            local db = math.abs(pb[1]) + math.abs(pb[2])
-
-            return da < db
-        end
+    table.sort(crops, function(a, b)
+        return a[2] < b[2]
     end)
 
     -- If the worst crop is strictly equal to or better than the comparison
     -- crop, no replacement should occur.
-    local candidate = breeding[crops[1]]
+    local candidate = breeding[crops[1][1]]
     if candidate.gr >= comp.gr and candidate.ga >= comp.ga and candidate.re <= comp.re then
         return nil
     else
-        return crops[1]
+        return crops[1][1]
     end
 end
 
