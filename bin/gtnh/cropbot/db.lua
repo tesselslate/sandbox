@@ -14,10 +14,10 @@ local pos_table = function()
 
     return setmetatable({}, {
         __pairs = function(self)
-            local iter = pairs(data)
+            local pk = nil
 
             return function()
-                local k, v = iter()
+                local k, v = next(data, pk)
 
                 if k then
                     local x = math.floor(k / 200)
