@@ -20,6 +20,13 @@ local util      = require("util")
 --
 --]]
 
+--- Performs a robot "use" action beneath the robot while sneaking.
+-- This is primarily used for dislocating crops which may or may not be ready
+-- for harvest.
+local sneak_down = function()
+    return robot.use(sides.down, sides.down, true)
+end
+
 --[[
 --
 --   Module
@@ -49,12 +56,12 @@ M.archive = function()
 
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
-        assert(robot.use(sides.down, true), "could not bind dislocator to source block")
+        assert(sneak_down(), "could not bind dislocator to source block")
         M.dislocate()
 
         -- Move the crop to the target location within storage.
         move.to(slot)
-        assert(robot.use(sides.down, true), "could not bind dislocator to destination block")
+        assert(sneak_down(), "could not bind dislocator to destination block")
         M.dislocate()
     end)
 
@@ -200,7 +207,7 @@ M.transplant = function()
 
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
-        assert(robot.use(sides.down, true), "could not bind dislocator to source block")
+        assert(sneak_down(), "could not bind dislocator to source block")
         M.dislocate()
 
         -- Move the crop to the target location within the breeding field,
@@ -208,7 +215,7 @@ M.transplant = function()
         move.to(slot)
         M.break_crop()
         M.break_sticks()
-        assert(robot.use(sides.down, true), "could not bind dislocator to destination block")
+        assert(sneak_down(), "could not bind dislocator to destination block")
         M.dislocate()
     end)
 
