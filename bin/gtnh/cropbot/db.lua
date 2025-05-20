@@ -1,5 +1,5 @@
 -- User imports
-local cfg       = require("config")
+local cfg       = require("cfg")
 local scan      = require("scan")
 local util      = require("util")
 
@@ -78,13 +78,13 @@ end
 -- @param crop The crop to score
 local score_crop = function(crop)
     local gr = crop.gr
-    if crop.gr > config.target_growth then
-        gr = gr - (crop.gr - config.target_growth)
+    if crop.gr > cfg.target_growth then
+        gr = gr - (crop.gr - cfg.target_growth)
     end
 
     local re = crop.re
-    if crop.re > config.target_resistance then
-        re = re - (crop.re - config.target_resistance)
+    if crop.re > cfg.target_resistance then
+        re = re - (crop.re - cfg.target_resistance)
     end
 
     return gr + crop.ga + re
