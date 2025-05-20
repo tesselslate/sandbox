@@ -135,7 +135,7 @@ M.find_worst = function(comp)
     end
 
     -- Only return the worst crop if the comparison crop is actually better.
-    if worst_score < score(comp) then
+    if worst_score < score_crop(comp) then
         return worst
     end
 end
