@@ -49,12 +49,12 @@ M.archive = function()
 
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
-        assert(robot.use(sides.down), "could not bind dislocator to source block")
+        assert(robot.use(sides.down, true), "could not bind dislocator to source block")
         M.dislocate()
 
         -- Move the crop to the target location within storage.
         move.to(slot)
-        assert(robot.use(sides.down), "could not bind dislocator to destination block")
+        assert(robot.use(sides.down, true), "could not bind dislocator to destination block")
         M.dislocate()
     end)
 
@@ -200,7 +200,7 @@ M.transplant = function()
 
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
-        assert(robot.use(sides.down), "could not bind dislocator to source block")
+        assert(robot.use(sides.down, true), "could not bind dislocator to source block")
         M.dislocate()
 
         -- Move the crop to the target location within the breeding field,
@@ -208,7 +208,7 @@ M.transplant = function()
         move.to(slot)
         M.break_crop()
         M.break_sticks()
-        assert(robot.use(sides.down), "could not bind dislocator to destination block")
+        assert(robot.use(sides.down, true), "could not bind dislocator to destination block")
         M.dislocate()
     end)
 

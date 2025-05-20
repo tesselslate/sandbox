@@ -73,7 +73,7 @@ while true do
         else
             -- Parent crop
 
-            if crop and crop.name == util.CROP_WEED or crop.name == util.CROP_GRASS then
+            if not crop or crop.name == util.CROP_WEED or crop.name == util.CROP_GRASS then
                 -- If a parent crop gets weeded, simply break the sticks.
                 -- TODO: Handle this better (replant?)
                 action.break_crop()
