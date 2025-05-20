@@ -74,8 +74,9 @@ while true do
             -- Parent crop
 
             if crop and util.is_weed(crop) then
-                -- If a parent crop gets weeded, simply break the sticks.
-                -- TODO: Handle this better (replant?)
+                -- If a parent crop gets weeded, simply break the sticks. The
+                -- crop will be replanted the next time the bot gets an
+                -- unsuitable child crop.
                 action.break_crop()
                 action.break_sticks()
 

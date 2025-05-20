@@ -110,6 +110,20 @@ M.clear = function(pos)
     end
 end
 
+--- Attempts to find an empty parent breeding slot.
+-- @return The coordinates of an empty parent slot, if any
+M.find_empty_parent = function()
+    for x = 0, util.SIZE_BREEDING - 1, 2 do
+        for z = 0, util.SIZE_BREEDING - 1, 2 do
+            local pos = {util.POS_BREEDING[1] + x, util.POS_BREEDING[2] + z}
+
+            if not breeding[pos] then
+                return pos
+            end
+        end
+    end
+end
+
 --- Attempts to find a breeding crop worse than the comparison crop.
 -- @param comp The new crossbred crop to compare against
 -- @return The coordinates of an inferior crop, if any

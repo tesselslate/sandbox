@@ -27,6 +27,38 @@ local sneak_down = function()
     return robot.use(sides.down, sides.down, true)
 end
 
+--- Attempts to move the currently hovered crop to an empty parent slot.
+-- @param pos The current position of the robot
+-- @return Whether the crop was transplanted
+local transplant_parent = function(pos)
+    local slot = db.find_empty_parent()
+
+    if not slot then
+        return false
+    end
+
+    util.equip_scoped(util.SLOT_DISLOCATOR, function()
+        -- Move the crop into the dislocator buffer.
+        assert(sneak_down(), "could not bind dislocator to source block")
+        M.dislocate()
+
+        -- Move the crop to the target location within the breeding field.
+        move.to(slot)
+        assert(sneak_down(), "could not bind dislocator to destination block")
+        M.dislocate()
+    end)
+
+    db.clear(pos)
+    db.set(slot, crop)
+
+    -- Replace the sticks at the source crop's location so a new crop can
+    -- crossbreed in its place.
+    move.to(pos)
+    M.place_sticks(2)
+
+    return true
+end
+
 --[[
 --
 --   Module
@@ -204,8 +236,10 @@ M.transplant = function()
 
     local slot = db.find_worst(crop)
 
+    -- If there is no inferior parent crop, try to find an empty parent to
+    -- transplant this crop into.
     if not slot then
-        return false
+        return transplant_parent(pos)
     end
 
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
