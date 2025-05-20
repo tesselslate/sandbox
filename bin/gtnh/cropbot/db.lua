@@ -1,6 +1,5 @@
 -- User imports
 local cfg       = require("config")
-local move      = require("move")
 local scan      = require("scan")
 local util      = require("util")
 
@@ -76,7 +75,8 @@ local scan_field = function(tbl, pos, size)
 end
 
 --- Calculates a score based on the given crop's statistics.
-local score = function(crop)
+-- @param crop The crop to score
+local score_crop = function(crop)
     return crop.gr + crop.ga - crop.re
 end
 
@@ -122,26 +122,21 @@ M.find_worst = function(comp)
 
     -- Sort the list of breeding crops based on their stats, and then compare the
     -- lowest stat crop against the comparison crop.
-    local crops = {}
+    local worst = nil
+    local worst_score = 10000
     for k, v in pairs(breeding) do
-        if type(v) == "table" then
-            table.insert(crops, k)
+        if not util.is_child(k) then
+            local val = score_crop(v)
+            if val < worst_score then
+                worst_score = val
+                worst = k
+            end
         end
     end
 
-    assert(#crops, "no parent crops found")
-
-    table.sort(crops, function(a, b)
-        return score(breeding[a]) < score(breeding[b])
-    end)
-
-    -- If the worst crop is strictly equal to or better than the comparison
-    -- crop, no replacement should occur.
-    local candidate = breeding[crops[1]]
-    if candidate.gr >= comp.gr and candidate.ga >= comp.ga and candidate.re <= comp.re then
-        return nil
-    else
-        return crops[1][1]
+    -- Only return the worst crop if the comparison crop is actually better.
+    if worst_score < score(comp) then
+        return worst
     end
 end
 
