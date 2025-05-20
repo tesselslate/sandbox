@@ -78,6 +78,24 @@ M.is_child = function(pos)
     return (dx + dz) % 2 == 1
 end
 
+--- Returns whether or not the given crop exhibits weed behavior.
+-- @param crop The crop to check for weed-like behavior
+M.is_weed = function(crop)
+    if crop.name == M.CROP_GRASS or crop.name == M.CROP_WEED then
+        return true
+    end
+
+    if crop.name == M.CROP_VENOMILIA and crop.gr >= 8 then
+        return true
+    end
+
+    if crop.gr >= 24 then
+        return true
+    end
+
+    return false
+end
+
 --- Calculates and returns the sign of the input number.
 -- @param num The number to calculate the sign of
 -- @return The sign of the number (1, -1, or 0)
@@ -105,6 +123,7 @@ end
 
 M.BLOCK_CROP      = "IC2:blockCrop" -- The IC2 crop block ID.
 M.CROP_GRASS      = "Grass"         -- The grass crop ID.
+M.CROP_VENOMILIA  = "venomilia"     -- The venomilia crop ID.
 M.CROP_WEED       = "weed"          -- The weed crop ID.
 M.POS_BREEDING    = {0, 1}          -- The coordinates of the northwest corner of the breeding field.
 M.POS_CROPS       = {3, 0}          -- The coordinates of the crop sticks storage.

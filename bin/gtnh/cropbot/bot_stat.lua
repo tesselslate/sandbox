@@ -52,7 +52,7 @@ while true do
                 action.place_sticks(2)
             elseif crop.name then
                 -- Process the new child crop.
-                if crop.name == util.CROP_WEED or crop.name == util.CROP_GRASS then
+                if util.is_weed(crop) then
                     -- If it's a weed, break the weed and put the double sticks
                     -- back.
                     action.break_crop()
@@ -73,7 +73,7 @@ while true do
         else
             -- Parent crop
 
-            if crop and (crop.name == util.CROP_WEED or crop.name == util.CROP_GRASS) then
+            if crop and util.is_weed(crop) then
                 -- If a parent crop gets weeded, simply break the sticks.
                 -- TODO: Handle this better (replant?)
                 action.break_crop()
