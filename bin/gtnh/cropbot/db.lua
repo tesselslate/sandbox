@@ -1,5 +1,5 @@
 -- User imports
-local cfg       = require("cfg")
+local cfg       = require("config")
 local scan      = require("scan")
 local util      = require("util")
 
