@@ -125,19 +125,19 @@ M.find_worst = function(comp)
     local crops = {}
     for k, v in pairs(breeding) do
         if type(v) == "table" then
-            table.insert(crops, {k, score(v)})
+            table.insert(crops, k)
         end
     end
 
     assert(#crops, "no parent crops found")
 
     table.sort(crops, function(a, b)
-        return a[2] < b[2]
+        return score(breeding[a]) < score(breeding[b])
     end)
 
     -- If the worst crop is strictly equal to or better than the comparison
     -- crop, no replacement should occur.
-    local candidate = breeding[crops[1][1]]
+    local candidate = breeding[crops[1]]
     if candidate.gr >= comp.gr and candidate.ga >= comp.ga and candidate.re <= comp.re then
         return nil
     else
