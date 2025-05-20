@@ -45,7 +45,6 @@ local breeding  = pos_table() -- breeding crops
 local storage   = pos_table() -- storage crops
 
 local storage_slots = util.SIZE_STORAGE * util.SIZE_STORAGE -- # of open slots
-local target_crop = nil                                     -- breeding target
 
 --[[
 --
@@ -164,6 +163,17 @@ M.find_worst = function(comp)
     end
 end
 
+--- Returns information about the crop at the given position, if any.
+-- @param pos The position to get information about
+-- @return Information about the crop at that position
+M.get = function(pos)
+    if util.is_breeding(pos) then
+        return breeding[pos]
+    else
+        return storage[pos]
+    end
+end
+
 --- Finds an open storage slot for a crop to be placed in.
 -- @return The coordinates of an open slot in the storage field
 -- @raise could not find storage slot
@@ -181,14 +191,6 @@ M.get_storage_slot = function()
     error("could not find storage slot")
 end
 
---- Returns the target crop for stats breeding.
--- @return The target crop name
-M.get_target_crop = function()
-    assert(target_crop, "must have target crop")
-
-    return target_crop
-end
-
 --- Scans the breeding and storage fields to initialize the in-memory database.
 -- @param do_storage Whether to scan the storage field
 -- @raise multiple parent crop types found
@@ -196,26 +198,6 @@ end
 M.scan = function(do_storage)
     breeding = pos_table()
     scan_field(breeding, util.POS_BREEDING, util.SIZE_BREEDING)
-
-    local num_breeding = 0
-    for k, v in pairs(breeding) do
-        if v and not util.is_child(k) then
-            if not target_crop then
-                target_crop = v.name
-            else
-                if v.name ~= target_crop then
-                    error("multiple parent crop types found (" .. v.name .. ")")
-                end
-            end
-
-            num_breeding = num_breeding + 1
-        end
-    end
-
-    local expected = math.floor(util.SIZE_BREEDING * util.SIZE_BREEDING / 2) + 1
-    if num_breeding ~= expected then
-        error("parent slots not filled (" .. tostring(num_breeding) .. "/" .. tostring(expected) .. ")")
-    end
 
     if do_storage then
         storage = pos_table()

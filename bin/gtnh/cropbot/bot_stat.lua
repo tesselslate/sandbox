@@ -28,7 +28,36 @@ action.restock()
 
 -- Scan the crop field to populate the internal database.
 db.scan(true)
-print("Found target crop: " .. db.get_target_crop())
+
+local target_crop = nil
+for x = 0, util.SIZE_BREEDING - 1 do
+    for z = 0, util.SIZE_BREEDING - 1 do
+        local pos = {util.POS_BREEDING[1] + x, util.POS_BREEDING[2] + z}
+
+        if not util.is_child(pos) then
+            local crop = db.get(pos)
+
+            if not crop or not crop.name then
+                print("Missing parent crops")
+                os.exit()
+            end
+
+            if not target_crop then
+                target_crop = crop.name
+            elseif target_crop ~= crop.name then
+                print("Multiple crop types found (" .. target_crop .. ", " .. crop.name .. ")")
+                os.exit()
+            end
+        end
+    end
+end
+
+if not target_crop then
+    print("Empty breeding field")
+    os.exit()
+end
+
+print("Found target crop: " .. target_crop)
 
 --[[
 --
@@ -56,7 +85,7 @@ while true do
                     -- back.
                     action.break_crop()
                     action.place_sticks(1)
-                elseif crop.name ~= db.get_target_crop() then
+                elseif crop.name ~= target_crop then
                     -- If it's not the target crop, try storing it.
                     action.archive()
                 else
