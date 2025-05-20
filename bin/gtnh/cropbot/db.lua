@@ -67,7 +67,7 @@ end
 -- @param num The number to adjust storage_slots by
 local shift_storage_slots = function(num)
     storage_slots = storage_slots + num
-    print("Storage slots: " .. tostring(num))
+    print("Storage slots: " .. tostring(storage_slots))
 end
 
 --[[
