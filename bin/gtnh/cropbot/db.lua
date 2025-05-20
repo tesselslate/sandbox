@@ -1,0 +1,233 @@
+-- User imports
+local cfg       = require("config")
+local move      = require("move")
+local scan      = require("scan")
+local util      = require("util")
+
+-- State
+local pos_table = function()
+    local data = {}
+
+    local get_id = function(pos)
+        return (pos[1] + 100) * 200 + (pos[2] + 100)
+    end
+
+    return setmetatable({}, {
+        __pairs = function(self)
+            return pairs(data)
+        end,
+
+        __index = function(self, k)
+            assert(type(k) == "table" and #k == 2, "not a position")
+
+            return data[get_id(k)]
+        end,
+        __newindex = function(self, k, v)
+            assert(type(k) == "table" and #k == 2, "not a position")
+
+            data[get_id(k)] = v
+        end,
+    })
+end
+
+local breeding  = pos_table() -- breeding crops
+local storage   = pos_table() -- storage crops
+
+local storage_slots = util.SIZE_STORAGE * util.SIZE_STORAGE -- # of open slots
+local target_crop = nil                                     -- breeding target
+
+--[[
+--
+--   Internal
+--
+--]]
+
+--- Returns whether or not the given position is in the breeding field.
+-- @param pos The position to check
+-- @return Whether it is in the breeding field
+local is_breeding = function(pos)
+    return pos[2] > 0
+end
+
+--- Scans a field of crops, storing its contents in tbl.
+-- @param tbl The table to store the field contents in
+-- @param pos The coordinates of the northwest corner of the field
+-- @param size The size of the field
+local scan_field = function(tbl, pos, size)
+    scan.field(pos, size, function(slot)
+        local crop = util.get_crop()
+
+        if crop and crop.name then
+            tbl[slot] = crop
+        end
+    end)
+end
+
+--[[
+--
+--   Module
+--
+--]]
+
+local M = {}
+
+--- Clears the data about the crop at the given position from the database.
+-- @param pos The position to clear from the database
+M.clear = function(pos)
+    if is_breeding(pos) then
+        breeding[pos] = nil
+    else
+        if storage[pos] then
+            assert(storage_slots < util.SIZE_STORAGE * util.SIZE_STORAGE, "storage_slots desynchronized")
+            storage_slots = storage_slots + 1
+        end
+
+        storage[pos] = nil
+    end
+end
+
+--- Attempts to find a breeding crop worse than the comparison crop.
+-- @param comp The new crossbred crop to compare against
+-- @return The coordinates of an inferior crop, if any
+M.find_worst = function(comp)
+    -- Crops which exceed the desired maximum growth or resistance stats should
+    -- be destroyed.
+    if comp.gr > cfg.max_growth or comp.re > cfg.max_resistance then
+        return nil
+    end
+
+    -- Sort the list of breeding crops based on their stats, and then compare the
+    -- lowest stat crop against the comparison crop.
+    local crops = {}
+    for k, v in pairs(breeding) do
+        if type(v) == "table" then
+            table.insert(crops, k)
+        end
+    end
+
+    assert(#crops, "no parent crops found")
+
+    table.sort(crops, function(pa, pb)
+        a = breeding[pa]
+        b = breeding[pb]
+
+        -- Prefer growth over gain. Prefer lower resistance.
+        if a.gr ~= b.gr then
+            return a.gr < b.gr
+        elseif a.ga ~= b.ga then
+            return a.ga < b.ga
+        elseif a.re ~= b.re then
+            return a.re > b.re
+        else
+            local da = math.abs(pa[1]) + math.abs(pa[2])
+            local db = math.abs(pb[1]) + math.abs(pb[2])
+
+            return da < db
+        end
+    end)
+
+    -- If the worst crop is strictly equal to or better than the comparison
+    -- crop, no replacement should occur.
+    local candidate = breeding[crops[1]]
+    if candidate.gr >= comp.gr and candidate.ga >= comp.ga and candidate.re <= comp.re then
+        return nil
+    else
+        return crops[1]
+    end
+end
+
+--- Finds an open storage slot for a crop to be placed in.
+-- @return The coordinates of an open slot in the storage field
+-- @raise could not find storage slot
+M.get_storage_slot = function()
+    for x = 0, util.SIZE_STORAGE - 1 do
+        for z = 0, util.SIZE_STORAGE - 1 do
+            local pos = {util.POS_STORAGE[1] + x, util.POS_STORAGE[2] + z}
+
+            if not storage[pos] then
+                return pos
+            end
+        end
+    end
+
+    error("could not find storage slot")
+end
+
+--- Returns the target crop for stats breeding.
+-- @return The target crop name
+M.get_target_crop = function()
+    assert(target_crop, "must have target crop")
+
+    return target_crop
+end
+
+--- Scans the breeding and storage fields to initialize the in-memory database.
+-- @param do_storage Whether to scan the storage field
+-- @raise multiple parent crop types found
+-- @raise parent slots not filled
+M.scan = function(do_storage)
+    breeding = {}
+    scan_field(breeding, util.POS_BREEDING, util.SIZE_BREEDING)
+
+    local num_breeding = 0
+    for k, v in pairs(breeding) do
+        if v then
+            if not target_crop then
+                target_crop = v.name
+            else
+                if v.name ~= target_crop then
+                    error("multiple parent crop types found (" .. v.name .. ")")
+                end
+            end
+
+            num_breeding = num_breeding + 1
+        end
+    end
+
+    local expected = (util.SIZE_BREEDING * util.SIZE_BREEDING) // 2 + 1
+    if num_breeding ~= expected then
+        error("parent slots not filled (" .. tostring(num_breeding) .. "/" .. tostring(expected) .. ")")
+    end
+
+    if do_storage then
+        storage = {}
+        scan_field(storage, util.POS_STORAGE, util.SIZE_STORAGE)
+
+        for k, v in pairs(storage) do
+            if v then
+                storage_slots = storage_slots - 1
+            end
+        end
+    end
+end
+
+--- Places the given position and crop pairing into the database.
+-- @param pos The position to store the crop at
+-- @param crop The crop to store in the database
+M.set = function(pos, crop)
+    if is_breeding(pos) then
+        breeding[pos] = crop
+    else
+        if not storage[pos] then
+            assert(storage_slots > 0, "storage_slots desynchronized")
+            storage_slots = storage_slots - 1
+        end
+
+        storage[pos] = crop
+    end
+end
+
+--- Returns whether or not a crop with the given name should be archived.
+-- @param crop_name The name of the crop to check for
+-- @return Whether or not a crop with the given name should be archived
+M.should_archive = function(crop_name)
+    for k, v in pairs(storage) do
+        if type(v) == "table" and v.name == crop_name then
+            return false
+        end
+    end
+
+    return storage_slots > 0
+end
+
+return M
