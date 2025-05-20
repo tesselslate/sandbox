@@ -14,7 +14,18 @@ local pos_table = function()
 
     return setmetatable({}, {
         __pairs = function(self)
-            return pairs(data)
+            local iter = pairs(data)
+
+            return function()
+                local k, v = iter()
+
+                if k then
+                    local x = math.floor(k / 200)
+                    local z = k % 200
+
+                    return {x, z}, v
+                end
+            end
         end,
 
         __index = function(self, k)
