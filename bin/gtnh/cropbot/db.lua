@@ -77,7 +77,17 @@ end
 --- Calculates a score based on the given crop's statistics.
 -- @param crop The crop to score
 local score_crop = function(crop)
-    return crop.gr + crop.ga - crop.re
+    local gr = crop.gr
+    if crop.gr > config.target_growth then
+        gr = gr - (crop.gr - config.target_growth)
+    end
+
+    local re = crop.re
+    if crop.re > config.target_resistance then
+        re = re - (crop.re - config.target_resistance)
+    end
+
+    return gr + crop.ga + re
 end
 
 --- Updates the storage_slots value.
