@@ -128,6 +128,8 @@ M.clear_inventory = function()
 
     move.to(util.POS_DROPOFF)
 
+    local orig_slot = robot.select()
+
     local last_slot = 0
     local slots = inv.getInventorySize(sides.down)
     assert(slots, "expected dropoff inventory")
@@ -148,6 +150,7 @@ M.clear_inventory = function()
         end
     end
 
+    robot.select(orig_slot)
     move.to(pos)
     return true
 end
