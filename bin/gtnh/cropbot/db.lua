@@ -20,8 +20,8 @@ local pos_table = function()
                 pk = k
 
                 if k then
-                    local x = math.floor(k / 200)
-                    local z = k % 200
+                    local x = (math.floor(k / 200)) - 100
+                    local z = (k % 200) - 100
 
                     return {x, z}, v
                 end

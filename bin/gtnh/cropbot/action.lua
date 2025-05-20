@@ -198,8 +198,6 @@ M.transplant = function()
         return false
     end
 
-    print(util.str_crop(crop) .. " -> " .. util.str_crop(db.breeding[crop]))
-
     util.equip_scoped(util.SLOT_DISLOCATOR, function()
         -- Move the crop into the dislocator buffer.
         assert(robot.use(sides.down), "could not bind dislocator to source block")
