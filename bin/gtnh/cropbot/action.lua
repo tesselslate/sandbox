@@ -28,12 +28,26 @@ local dislocate = function()
     robot.use(sides.down)
 end
 
+--- Restocks on crop sticks if needed. Does not move the robot back.
+-- @return Whether or not the robot needed to restock
+local restock = function()
+    if robot.count(util.SLOT_CROPS) >= cfg.restock_threshold then
+        return false
+    end
+
+    move.to(util.POS_CROPS)
+    robot.select(util.SLOT_CROPS)
+    inv.suckFromSlot(sides.down, 2, robot.space(util.SLOT_CROPS))
+
+    return true
+end
+
 --- Places the specified number of crop sticks below the robot.
 -- @param count The number of crop sticks to place (default: 1)
 local place_sticks = function(count)
     local pos = move.get_pos()
 
-    if M.restock() then
+    if restock() then
         move.to(pos)
     end
 
@@ -218,17 +232,7 @@ M.place_sticks = place_sticks
 
 --- Restocks on crop sticks if needed. Does not move the robot back.
 -- @return Whether or not the robot needed to restock
-M.restock = function()
-    if robot.count(util.SLOT_CROPS) >= cfg.restock_threshold then
-        return false
-    end
-
-    move.to(util.POS_CROPS)
-    robot.select(util.SLOT_CROPS)
-    inv.suckFromSlot(sides.down, 2, robot.space(util.SLOT_CROPS))
-
-    return true
-end
+M.restock = restock
 
 --- Attempts to replace an existing crop with the crop beneath the robot.
 -- If all existing crops have better or equal stats, no replacement will occur
