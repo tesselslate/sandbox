@@ -18,6 +18,7 @@ local pos_table = function()
 
             return function()
                 local k, v = next(data, pk)
+                pk = k
 
                 if k then
                     local x = math.floor(k / 200)
