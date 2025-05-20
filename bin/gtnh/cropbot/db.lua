@@ -63,6 +63,13 @@ local scan_field = function(tbl, pos, size)
     end)
 end
 
+--- Updates the storage_slots value.
+-- @param num The number to adjust storage_slots by
+local shift_storage_slots = function(num)
+    storage_slots = storage_slots + num
+    print("Storage slots: " .. tostring(num))
+end
+
 --[[
 --
 --   Module
@@ -79,7 +86,7 @@ M.clear = function(pos)
     else
         if storage[pos] then
             assert(storage_slots < util.SIZE_STORAGE * util.SIZE_STORAGE, "storage_slots desynchronized")
-            storage_slots = storage_slots + 1
+            shift_storage_slots(1)
         end
 
         storage[pos] = nil
@@ -171,7 +178,7 @@ M.scan = function(do_storage)
 
     local num_breeding = 0
     for k, v in pairs(breeding) do
-        if v then
+        if v and not util.is_child(k) then
             if not target_crop then
                 target_crop = v.name
             else
@@ -196,21 +203,26 @@ M.scan = function(do_storage)
         for k, v in pairs(storage) do
             if v then
                 storage_slots = storage_slots - 1
+                print("Stored crop: " .. util.str_crop(v))
             end
         end
     end
+
+    shift_storage_slots(0)
 end
 
 --- Places the given position and crop pairing into the database.
 -- @param pos The position to store the crop at
 -- @param crop The crop to store in the database
 M.set = function(pos, crop)
+    assert(crop, "db.set must have a crop")
+
     if is_breeding(pos) then
         breeding[pos] = crop
     else
         if not storage[pos] then
             assert(storage_slots > 0, "storage_slots desynchronized")
-            storage_slots = storage_slots - 1
+            shift_storage_slots(-1)
         end
 
         storage[pos] = crop
@@ -223,11 +235,15 @@ end
 M.should_archive = function(crop_name)
     for k, v in pairs(storage) do
         if type(v) == "table" and v.name == crop_name then
+            print("Already stored " .. crop_name)
             return false
         end
     end
 
     return storage_slots > 0
 end
+
+M.breeding = breeding
+M.storage  = storage
 
 return M

@@ -28,7 +28,7 @@ end)
 action.restock()
 
 -- Scan the crop field to populate the internal database.
-db.scan(false)
+db.scan(true)
 print("Found target crop: " .. db.get_target_crop())
 
 --[[
