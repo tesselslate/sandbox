@@ -275,4 +275,13 @@ M.transplant = function()
     return true
 end
 
+--- Attempts to move the currently hovered crop to an empty parent crop slot.
+-- @return Whether or not the crop was transplanted
+M.transplant_empty = function()
+    local pos = move.get_pos()
+    local crop = util.get_crop()
+
+    return transplant_parent(pos, crop)
+end
+
 return M

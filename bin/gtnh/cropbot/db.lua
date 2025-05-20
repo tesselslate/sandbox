@@ -104,6 +104,8 @@ end
 
 local M = {}
 
+M.allow_duplicates = false
+
 --- Clears the data about the crop at the given position from the database.
 -- @param pos The position to clear from the database
 M.clear = function(pos)
@@ -236,10 +238,12 @@ end
 -- @param crop_name The name of the crop to check for
 -- @return Whether or not a crop with the given name should be archived
 M.should_archive = function(crop_name)
-    for _, v in pairs(storage) do
-        if type(v) == "table" and v.name == crop_name then
-            print("Already stored " .. crop_name)
-            return false
+    if not M.allow_duplicates then
+        for _, v in pairs(storage) do
+            if type(v) == "table" and v.name == crop_name then
+                print("Already stored " .. crop_name)
+                return false
+            end
         end
     end
 
