@@ -169,7 +169,7 @@ end
 -- @param pos The position to get information about
 -- @return Information about the crop at that position
 M.get = function(pos)
-    if util.is_breeding(pos) then
+    if is_breeding(pos) then
         return breeding[pos]
     else
         return storage[pos]
