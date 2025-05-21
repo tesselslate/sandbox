@@ -1,5 +1,6 @@
 -- System imports
 local component = require("component")
+local move      = require("move")
 local szn       = require("serialization")
 local sides     = require("sides")
 
