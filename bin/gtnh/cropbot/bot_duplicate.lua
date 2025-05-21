@@ -1,3 +1,9 @@
+-- System imports
+local component = require("component")
+local sides     = require("sides")
+
+local robot     = component.robot
+
 -- User imports
 local action    = require("action")
 local db        = require("db")
