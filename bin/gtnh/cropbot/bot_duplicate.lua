@@ -6,6 +6,7 @@ local robot     = component.robot
 
 -- User imports
 local action    = require("action")
+local cfg       = require("config")
 local db        = require("db")
 local move      = require("move")
 local scan      = require("scan")
@@ -66,6 +67,17 @@ print("Found target crop: " .. target_crop)
 --
 ]]--
 
+--- Determines whether or not the given crop has acceptable stats for storing.
+-- @param crop The crop to check the stats of
+-- @return Whether or not the crop is good enough to archive
+local stats_ok = function(crop)
+    local gr = crop.gr >= cfg.growth[1] and crop.gr <= cfg.growth[2]
+    local ga = crop.ga >= cfg.gain[1] and crop.ga <= cfg.gain[2]
+    local re = crop.re >= cfg.resistance[1] and crop.re <= cfg.resistance[2]
+
+    return gr and ga and re
+end
+
 while true do
     -- Recharge if low on battery.
     action.charge()
@@ -88,7 +100,7 @@ while true do
                 elseif crop.name == target_crop then
                     -- If it's the target crop, store it for later use (or
                     -- replace a killed parent crop if one exists.)
-                    if not action.transplant_empty() then
+                    if not action.transplant_empty() and stats_ok(crop) then
                         action.archive()
                     end
                 else
