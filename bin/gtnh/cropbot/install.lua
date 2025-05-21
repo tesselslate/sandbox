@@ -4,6 +4,7 @@ local filesystem = require("filesystem")
 local base = "https://raw.githubusercontent.com/tesselslate/sandbox/refs/heads/main/bin/gtnh/cropbot/"
 local files = {
     "action.lua",
+    "bot_duplicate.lua",
     "bot_stat.lua",
     "config.lua",
     "db.lua",
