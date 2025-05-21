@@ -15,7 +15,10 @@ local util      = require("util")
 db.allow_duplicates = true
 
 -- Bind the dislocator for its first use.
-util.init_dislocator()
+util.equip_scoped(util.SLOT_DISLOCATOR, function()
+    move.to(util.POS_DISLOCATOR)
+    robot.use(sides.down)
+end
 
 -- Get some crop sticks.
 action.restock()

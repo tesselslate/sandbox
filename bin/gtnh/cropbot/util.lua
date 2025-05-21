@@ -1,6 +1,5 @@
 -- System imports
 local component = require("component")
-local move      = require("move")
 local szn       = require("serialization")
 local sides     = require("sides")
 
@@ -57,14 +56,6 @@ M.get_crop = function()
     else
         return {}
     end
-end
-
---- Initializes the dislocator binder for future use.
-M.init_dislocator = function()
-    M.equip_scoped(M.SLOT_DISLOCATOR, function()
-        move.to(M.POS_DISLOCATOR)
-        robot.use(sides.down)
-    end)
 end
 
 --- Returns a pretty printed string containing the given table's contents.
