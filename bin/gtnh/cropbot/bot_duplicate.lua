@@ -1,5 +1,6 @@
 -- System imports
 local component = require("component")
+local shell     = require("shell")
 local sides     = require("sides")
 
 local robot     = component.robot
@@ -17,6 +18,8 @@ local util      = require("util")
 --
 ]]--
 
+local _, sh_ops = shell.parse()
+
 -- Allow duplicate crops in storage.
 db.allow_duplicates = true
 
@@ -30,7 +33,7 @@ end)
 action.restock()
 
 -- Scan the crop field to populate the internal database.
-db.scan(true)
+db.scan(not sh_ops["skip-scan"])
 
 local target_crop = nil
 for x = 1, util.SIZE_BREEDING - 1, 2 do

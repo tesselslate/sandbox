@@ -1,7 +1,7 @@
 -- System imports
 local component = require("component")
-local szn       = require("serialization")
 local sides     = require("sides")
+local szn       = require("serialization")
 
 local geolyzer  = component.geolyzer
 local inv       = component.inventory_controller

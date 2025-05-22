@@ -1,5 +1,6 @@
 -- System imports
 local component = require("component")
+local shell     = require("shell")
 local sides     = require("sides")
 
 local robot     = component.robot
@@ -18,6 +19,8 @@ local util      = require("util")
 --
 --]]
 
+local _, sh_ops = shell.parse()
+
 -- Bind the dislocator for its first use.
 util.equip_scoped(util.SLOT_DISLOCATOR, function()
     move.to(util.POS_DISLOCATOR)
@@ -28,7 +31,7 @@ end)
 action.restock()
 
 -- Scan the crop field to populate the internal database.
-db.scan(true)
+db.scan(not sh_ops["skip-scan"])
 
 local target_crop = nil
 for x = 0, util.SIZE_BREEDING - 1 do
