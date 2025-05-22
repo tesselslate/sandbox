@@ -19,7 +19,7 @@ local util      = require("util")
 --
 --]]
 
-local _, sh_ops = shell.parse()
+local _, sh_ops = shell.parse() -- TODO: broken idk why
 
 -- Bind the dislocator for its first use.
 util.equip_scoped(util.SLOT_DISLOCATOR, function()
