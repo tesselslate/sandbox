@@ -1,13 +1,13 @@
 -- User imports
 local move      = require("move")
 
+local M = {}
+
 --[[
 --
 --   Module
 --
 --]]
-
-local M = {}
 
 --- Scans a field of crops, executing the specified callback above each crop.
 -- The callback will be invoked with the current position of the robot.

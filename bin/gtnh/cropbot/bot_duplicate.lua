@@ -100,7 +100,7 @@ while true do
                 elseif crop.name == target_crop then
                     -- If it's the target crop, store it for later use (or
                     -- replace a killed parent crop if one exists.)
-                    if stats_ok(crop) and not action.transplant_empty() then
+                    if stats_ok(crop) and not action.transplant_duplicate() then
                         action.archive()
                     else
                         action.break_crop()

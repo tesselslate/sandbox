@@ -11,6 +11,8 @@ local util      = require("util")
 local pos    = {0, 0}  -- current position (relative to station)
 local facing = {0, -1} -- current facing   ({dx, dz} for 1 forward step)
 
+local M = {}
+
 --[[
 --
 --   Internal
@@ -53,8 +55,6 @@ end
 --   Module
 --
 --]]
-
-local M = {}
 
 --- Returns the current facing of the robot.
 -- The facing is represented as a difference in position from one forward step.

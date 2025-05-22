@@ -13,6 +13,8 @@ local db        = require("db")
 local move      = require("move")
 local util      = require("util")
 
+local M = {}
+
 --[[
 --
 --   Internal
@@ -26,6 +28,61 @@ local dislocate = function()
     redstone.setOutput(sides.down, 15)
     redstone.setOutput(sides.down, 0)
     robot.use(sides.down)
+end
+
+--- Returns the position of a parent crop whose name does not match, if any.
+-- @param target_name The name of the target breeding crop
+-- @return The position of a parent crop whose name does not match, if any
+local find_parent = function(target_name)
+    for x = 0, util.SIZE_BREEDING - 1, 2 do
+        for z = 0, util.SIZE_BREEDING - 1, 2 do
+            local pos = {util.POS_BREEDING[1] + x, util.POS_BREEDING[2] + z}
+            local crop = db.get(pos)
+
+            if crop and crop.name ~= target_name then
+                return pos
+            end
+        end
+    end
+end
+
+--- Performs a robot "use" action beneath the robot while sneaking.
+-- This is primarily used for dislocating crops which may or may not be ready
+-- for harvest.
+local sneak_down = function()
+    return robot.use(sides.down, sides.down, true)
+end
+
+--- Moves a crop from one position to another, breaking the destination crop.
+-- @param src The position of the crop to move
+-- @param dst The position to move the crop to
+local move_crop = function(src, dst)
+    move.to(src)
+    local src_crop = util.get_crop()
+
+    util.equip_scoped(util.SLOT_DISLOCATOR, function()
+        -- Move the crop into the dislocator buffer.
+        assert(sneak_down(), "could not bind dislocator to source block")
+        dislocate()
+
+        -- Move the crop to the destination, breaking the previous crop and crop
+        -- sticks (if any) at the destination.
+        move.to(dst)
+        local dst_crop = util.get_crop()
+
+        if dst_crop then
+            if dst_crop.name then
+                M.break_crop()
+            end
+            M.break_sticks()
+        end
+
+        assert(sneak_down(), "could not bind dislocator to destination block")
+        dislocate()
+    end)
+
+    db.clear(dst)
+    db.set(src, src_crop)
 end
 
 --- Restocks on crop sticks if needed. Does not move the robot back.
@@ -58,53 +115,11 @@ local place_sticks = function(count)
     end)
 end
 
---- Performs a robot "use" action beneath the robot while sneaking.
--- This is primarily used for dislocating crops which may or may not be ready
--- for harvest.
-local sneak_down = function()
-    return robot.use(sides.down, sides.down, true)
-end
-
---- Attempts to move the currently hovered crop to an empty parent slot.
--- @param pos The current position of the robot
--- @param crop The crop to move
--- @return Whether the crop was transplanted
-local transplant_parent = function(pos, crop)
-    local slot = db.find_empty_parent()
-
-    if not slot then
-        return false
-    end
-
-    util.equip_scoped(util.SLOT_DISLOCATOR, function()
-        -- Move the crop into the dislocator buffer.
-        assert(sneak_down(), "could not bind dislocator to source block")
-        dislocate()
-
-        -- Move the crop to the target location within the breeding field.
-        move.to(slot)
-        assert(sneak_down(), "could not bind dislocator to destination block")
-        dislocate()
-    end)
-
-    db.clear(pos)
-    db.set(slot, crop)
-
-    -- Replace the sticks at the source crop's location so a new crop can
-    -- crossbreed in its place.
-    move.to(pos)
-    place_sticks(2)
-
-    return true
-end
-
 --[[
 --
 --   Module
 --
 --]]
-
-local M = {}
 
 --- Attempts to place the crop beneath the robot into storage.
 -- If a crop with the same name already exists in storage, the crop beneath the
@@ -125,20 +140,8 @@ M.archive = function()
     local slot = db.get_storage_slot()
     assert(slot, "no storage slot for crop")
 
-    util.equip_scoped(util.SLOT_DISLOCATOR, function()
-        -- Move the crop into the dislocator buffer.
-        assert(sneak_down(), "could not bind dislocator to source block")
-        dislocate()
-
-        -- Move the crop to the target location within storage.
-        move.to(slot)
-        assert(sneak_down(), "could not bind dislocator to destination block")
-        dislocate()
-    end)
-
-    -- Update the database to reflect the crop's movement.
-    db.clear(pos)
-    db.set(slot, crop)
+    -- Move the crop into storage.
+    move_crop(pos, slot)
 
     -- Put crop sticks back.
     move.to(pos)
@@ -234,38 +237,29 @@ M.place_sticks = place_sticks
 -- @return Whether or not the robot needed to restock
 M.restock = restock
 
---- Attempts to replace an existing crop with the crop beneath the robot.
--- If all existing crops have better or equal stats, no replacement will occur
--- and the crop beneath the robot will instead be broken.
+--- Attempts to transplant the crop beneath the robot with the duplicate rules.
+-- 1. If there is an existing parent crop whose species is not the target
+-- species (typically stickreed), it will be replaced.
+-- 2. If there is an empty parent crop slot, the hovered crop will get moved
+-- there.
+-- @param target_name The name of the target breeding crop
 -- @return Whether or not the crop was transplanted
-M.transplant = function()
+M.transplant_duplicate = function(target_name)
     local pos = move.get_pos()
-    local crop = util.get_crop()
+    local slot = find_parent(target_name)
 
-    local slot = db.find_worst(crop)
-
-    -- If there is no inferior parent crop, try to find an empty parent to
+    -- If there is no suitable parent crop, try to find an empty parent to
     -- transplant this crop into.
     if not slot then
-        return transplant_parent(pos, crop)
+        slot = db.find_empty_parent()
+
+        if not slot then
+            return false
+        end
     end
 
-    util.equip_scoped(util.SLOT_DISLOCATOR, function()
-        -- Move the crop into the dislocator buffer.
-        assert(sneak_down(), "could not bind dislocator to source block")
-        dislocate()
-
-        -- Move the crop to the target location within the breeding field,
-        -- breaking the previous crop and crop sticks at the target location.
-        move.to(slot)
-        M.break_crop()
-        M.break_sticks()
-        assert(sneak_down(), "could not bind dislocator to destination block")
-        dislocate()
-    end)
-
-    db.clear(pos)
-    db.set(slot, crop)
+    -- Transplant the crop.
+    move_crop(pos, slot)
 
     -- Replace the sticks at the source crop's location so a new crop can
     -- crossbreed in its place.
@@ -275,13 +269,37 @@ M.transplant = function()
     return true
 end
 
---- Attempts to move the currently hovered crop to an empty parent crop slot.
+--- Attempts to transplant the crop beneath the robot with the stat rules.
+-- 1. If there is an existing parent crop with inferior stats, it will be
+-- replaced.
+-- 2. If there is an empty parent crop slot, the hovered crop will get moved
+-- there regardless of its stats.
 -- @return Whether or not the crop was transplanted
-M.transplant_empty = function()
+M.transplant_stat = function()
     local pos = move.get_pos()
     local crop = util.get_crop()
 
-    return transplant_parent(pos, crop)
+    local slot = db.find_worst(crop)
+
+    -- If there is no inferior parent crop, try to find an empty parent to
+    -- transplant this crop into.
+    if not slot then
+        slot = db.find_empty_parent()
+
+        if not slot then
+            return false
+        end
+    end
+
+    -- Transplant the crop.
+    move_crop(pos, slot)
+
+    -- Replace the sticks at the source crop's location so a new crop can
+    -- crossbreed in its place.
+    move.to(pos)
+    M.place_sticks(2)
+
+    return true
 end
 
 return M

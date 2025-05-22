@@ -7,13 +7,13 @@ local geolyzer  = component.geolyzer
 local inv       = component.inventory_controller
 local robot     = component.robot
 
+local M = {}
+
 --[[
 --
 --   Module
 --
 --]]
-
-local M = {}
 
 --- Attempts to run the given function with the given item slot equipped.
 -- @param slot The item slot to equip from

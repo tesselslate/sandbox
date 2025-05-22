@@ -46,6 +46,10 @@ local storage   = pos_table() -- storage crops
 
 local storage_slots = util.SIZE_STORAGE * util.SIZE_STORAGE -- # of open slots
 
+local M = {}
+
+M.allow_duplicates = false
+
 --[[
 --
 --   Internal
@@ -101,10 +105,6 @@ end
 --   Module
 --
 --]]
-
-local M = {}
-
-M.allow_duplicates = false
 
 --- Clears the data about the crop at the given position from the database.
 -- @param pos The position to clear from the database

@@ -91,7 +91,7 @@ while true do
                 else
                     -- If it is the target crop, try finding an inferior parent
                     -- to replace.
-                    if not action.transplant() then
+                    if not action.transplant_stat() then
                         -- If there is no inferior crop to replace, destroy it.
                         action.break_crop()
                         action.place_sticks(1)
