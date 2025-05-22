@@ -8,6 +8,7 @@ return {
     -- bot_stat
     target_growth = 21,
     target_resistance = 0,
+    store_new_species = true,
 
     -- bot_duplicate
     growth = {20, 23},

@@ -6,6 +6,7 @@ local robot     = component.robot
 
 -- User imports
 local action    = require("action")
+local cfg       = require("config")
 local db        = require("db")
 local move      = require("move")
 local scan      = require("scan")
@@ -85,7 +86,7 @@ while true do
                     -- back.
                     action.break_crop()
                     action.place_sticks(1)
-                elseif crop.name ~= target_crop then
+                elseif cfg.store_new_species and crop.name ~= target_crop then
                     -- If it's not the target crop, try storing it.
                     action.archive()
                 else
