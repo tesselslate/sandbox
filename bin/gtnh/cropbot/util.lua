@@ -7,6 +7,9 @@ local geolyzer  = component.geolyzer
 local inv       = component.inventory_controller
 local robot     = component.robot
 
+-- User imports
+local cfg       = require("config")
+
 local M = {}
 
 --[[
@@ -93,6 +96,22 @@ M.is_weed = function(crop)
     return false
 end
 
+--- Calculates a score based on the given crop's statistics.
+-- @param crop The crop to score
+M.score_crop = function(crop)
+    local gr = crop.gr
+    if crop.gr > cfg.target_growth then
+        gr = gr - (crop.gr - cfg.target_growth)
+    end
+
+    local re = crop.re
+    if crop.re > cfg.target_resistance then
+        re = re - (crop.re - cfg.target_resistance)
+    end
+
+    return gr + crop.ga + re
+end
+
 --- Calculates and returns the sign of the input number.
 -- @param num The number to calculate the sign of
 -- @return The sign of the number (1, -1, or 0)
@@ -104,6 +123,17 @@ M.sign = function(num)
     else
         return 0
     end
+end
+
+--- Determines whether or not the given crop has acceptable stats for storing.
+-- @param crop The crop to check the stats of
+-- @return Whether or not the crop is good enough to archive
+M.stats_ok = function(crop)
+    local gr = crop.gr >= cfg.growth[1] and crop.gr <= cfg.growth[2]
+    local ga = crop.ga >= cfg.gain[1] and crop.ga <= cfg.gain[2]
+    local re = crop.re >= cfg.resistance[1] and crop.re <= cfg.resistance[2]
+
+    return gr and ga and re
 end
 
 --- Returns a pretty printed version of the crop and its statistics.

@@ -77,22 +77,6 @@ local scan_field = function(tbl, pos, size)
     end)
 end
 
---- Calculates a score based on the given crop's statistics.
--- @param crop The crop to score
-local score_crop = function(crop)
-    local gr = crop.gr
-    if crop.gr > cfg.target_growth then
-        gr = gr - (crop.gr - cfg.target_growth)
-    end
-
-    local re = crop.re
-    if crop.re > cfg.target_resistance then
-        re = re - (crop.re - cfg.target_resistance)
-    end
-
-    return gr + crop.ga + re
-end
-
 --- Updates the storage_slots value.
 -- @param num The number to adjust storage_slots by
 local shift_storage_slots = function(num)
@@ -151,7 +135,7 @@ M.find_worst = function(comp)
     local worst_score = 10000
     for k, v in pairs(breeding) do
         if not util.is_child(k) then
-            local val = score_crop(v)
+            local val = util.score_crop(v)
             if val < worst_score then
                 worst_score = val
                 worst = k
@@ -160,7 +144,7 @@ M.find_worst = function(comp)
     end
 
     -- Only return the worst crop if the comparison crop is actually better.
-    if worst_score < score_crop(comp) then
+    if worst_score < util.score_crop(comp) then
         return worst
     end
 end

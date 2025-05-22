@@ -46,6 +46,26 @@ local find_parent = function(target_name)
     end
 end
 
+--- Attempts to find a worse target crop parent to replace.
+-- @param crop The source crop
+-- @return The position of a worse target crop, if any
+local find_worse_parent = function(crop)
+    local score = util.score_crop(crop)
+
+    for x = 1, util.SIZE_BREEDING - 2, 2 do
+        for z = 1, util.SIZE_BREEDING - 2, 2 do
+            local candidate_pos = {util.POS_BREEDING[1] + x, util.POS_BREEDING[2] + z}
+            local candidate = db.get(candidate_pos)
+
+            if not candidate then
+                return candidate_pos
+            elseif util.score_crop(candidate) < score then
+                return candidate_pos
+            end
+        end
+    end
+end
+
 --- Performs a robot "use" action beneath the robot while sneaking.
 -- This is primarily used for dislocating crops which may or may not be ready
 -- for harvest.
@@ -246,7 +266,22 @@ M.restock = restock
 -- @return Whether or not the crop was transplanted
 M.transplant_duplicate = function(target_name)
     local pos = move.get_pos()
-    local slot = find_parent(target_name)
+    local crop = util.get_crop()
+    local slot
+
+    -- If this crop is not good enough, check if its parents are worse and need
+    -- to be statted up.
+    if not util.stats_ok(crop) then
+        slot = find_worse_parent(crop)
+
+        if not slot then
+            return false
+        end
+    end
+
+    if not slot then
+        slot = find_parent(target_name)
+    end
 
     -- If there is no suitable parent crop, try to find an empty parent to
     -- transplant this crop into.
