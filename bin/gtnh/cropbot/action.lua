@@ -101,8 +101,8 @@ local move_crop = function(src, dst)
         dislocate()
     end)
 
-    db.clear(dst)
-    db.set(src, src_crop)
+    db.clear(src)
+    db.set(dst, src_crop)
 end
 
 --- Restocks on crop sticks if needed. Does not move the robot back.
