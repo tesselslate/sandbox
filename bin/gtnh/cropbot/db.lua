@@ -161,8 +161,7 @@ M.get = function(pos)
 end
 
 --- Finds an open storage slot for a crop to be placed in.
--- @return The coordinates of an open slot in the storage field
--- @raise could not find storage slot
+-- @return The coordinates of an open slot in the storage field, if any
 M.get_storage_slot = function()
     for x = 0, util.SIZE_STORAGE - 1 do
         for z = 0, util.SIZE_STORAGE - 1 do
@@ -174,7 +173,7 @@ M.get_storage_slot = function()
         end
     end
 
-    error("could not find storage slot")
+    return nil
 end
 
 --- Scans the breeding and storage fields to initialize the in-memory database.

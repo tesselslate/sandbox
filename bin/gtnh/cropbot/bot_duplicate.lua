@@ -69,9 +69,50 @@ print("Found target crop: " .. target_crop)
 --
 ]]--
 
+--- Breaks all child crop sticks.
+local break_child_sticks = function()
+    for x = 0, util.SIZE_BREEDING - 1 do
+        for z = 0, util.SIZE_BREEDING - 1 do
+            local pos = {util.POS_BREEDING[1] + x, util.POS_BREEDING[2] + z}
+            move.to(pos)
+
+            if util.is_child(pos) then
+                local crop = util.get_crop()
+
+                if crop then
+                    if crop.name then
+                        action.break_crop()
+                    end
+
+                    action.break_sticks()
+                end
+            end
+        end
+    end
+end
+
+--- Clears the storage field, depositing all of the results.
+local clear_storage = function()
+    scan.field(util.POS_STORAGE, util.SIZE_STORAGE, function(pos)
+        if util.get_crop() then
+            action.break_sticks()
+        end
+
+        db.clear(pos)
+    end)
+end
+
 while true do
     -- Recharge if low on battery.
     action.charge()
+
+    -- If the storage field is full, clear it. Break the breeding crop sticks
+    -- first to ensure that weeds do not grow while the storage field is being
+    -- cleared.
+    if not db.get_storage_slot() then
+        break_child_sticks()
+        clear_storage()
+    end
 
     scan.field(util.POS_BREEDING, util.SIZE_BREEDING, function(pos)
         local crop = util.get_crop()
