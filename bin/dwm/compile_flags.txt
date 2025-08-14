@@ -1,0 +1,8 @@
+-std=c99
+-pedantic
+-Wall
+-Werror
+-Wno-deprecated-declarations
+-Wno-unused-function
+-I/usr/X11R6/include
+-I/usr/include/freetype2
