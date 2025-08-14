@@ -1,0 +1,7 @@
+{
+    "rust-analyzer": {
+        "checkOnSave": {
+            "target": "./build/targets/x86_64-bare.json"
+        }
+    }
+}

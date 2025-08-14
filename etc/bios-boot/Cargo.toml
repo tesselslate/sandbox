@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+    "boot/x86_64-bios"
+]
+
+[profile.release.package.x86_64-bios]
+strip = true
+opt-level = "z"

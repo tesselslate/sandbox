@@ -1,0 +1,36 @@
+# lists all targets
+default:
+    @just --list
+
+# build this crate with default settings
+build_default:
+    @just build ../.. ""
+
+# build this crate with custom settings
+build $ROOT $CARGOFLAGS:
+    # build the crate
+    mkdir -p $ROOT/build/out
+    cargo build $CARGOFLAGS --release
+    rm -f $ROOT/build/out/boot-x86_64-bios.bin
+    objcopy -I elf64-x86-64 -O binary \
+        $ROOT/target/x86_64-bare/release/x86_64-bios \
+        $ROOT/build/out/boot-x86_64-bios.bin
+
+    # generate FAT12 partition
+    $ROOT/build/build-fat12-image \
+        $ROOT/build/out/boot-x86_64-fat.img \
+        2 \
+        src
+
+    # concatenate FAT12 filesystem and bootloader
+    $ROOT/build/mbr_partition \
+        $ROOT/build/out/boot-x86_64-disk.iso \
+        $ROOT/build/out/boot-x86_64-bios.bin \
+        $ROOT/build/out/boot-x86_64-fat.img
+
+# runs the built image with QEMU
+qemu:
+    qemu-system-x86_64 \
+        -drive format=raw,file=../../build/out/boot-x86_64-disk.iso \
+        -gdb tcp::9000 \
+        -serial mon:stdio

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# creates a FAT12 filesystem image
+# $1 => disk image name
+# $2 => filesystem size in MB
+# $3 => filesystem root directory
+
+# create file of zeros
+dd if=/dev/zero of=$1 bs=1M count=$2
+
+# format with FAT12
+mformat -i $1
+
+# copy files
+mcopy -i $1 -s $3/* ::

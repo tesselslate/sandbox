@@ -1,0 +1,89 @@
+#!/usr/bin/python
+
+# mbr_partition
+# creates an MBR disk image with a bootloader binary and a set of
+# partitions to append. the first partition is always assumed to
+# be the bootable one.
+#
+# parameters:
+# 1     | output disk image path
+# 2     | input bootloader binary path
+# 3 ... | input partition paths
+
+import os
+import shutil
+import sys
+
+if len(sys.argv) < 4:
+    print("Not enough arguments")
+    sys.exit(1)
+
+if len(sys.argv) > 7:
+    print("Too many partitions")
+    sys.exit(1)
+
+outfile = sys.argv[1]
+boot_name = sys.argv[2]
+boot_size = os.path.getsize(boot_name)
+
+if boot_size % 512 != 0:
+    print("Bootloader not aligned to disk sector")
+    sys.exit(1)
+
+partitions = []
+part_sizes = []
+
+for i in range(3, len(sys.argv)):
+    partitions.append(sys.argv[i])
+    size = os.path.getsize(sys.argv[i])
+    if size % 512 != 0:
+        print(f"Partition {sys.argv[i]} was not aligned to disk sector")
+        sys.exit(1)
+
+    part_sizes.append(size)
+
+# read bootloader binary
+bootloader = bytearray(open(boot_name, "rb").read())
+
+# writes a 4 byte int to the MBR
+def write_int(offset, num):
+    bin = num.to_bytes(4, byteorder="little", signed=False)
+    for i in range(4):
+        bootloader[offset + i] = bin[i]
+
+# sets an entry in the MBR partition table.
+def set_partition(index, bootable, lba_start, sectors, type):
+    offset = index * 0x10 + 0x1be
+
+    if bootable:
+        bootloader[offset] = 0b10000000
+    else:
+        bootloader[offset] = 0
+
+    write_int(offset + 0x08, lba_start)
+    write_int(offset + 0x0c, sectors)
+
+    bootloader[offset + 0x04] = type
+
+# write MBR
+disk_ptr = boot_size
+for i in range(len(partitions)):
+    set_partition(
+            i,                      # partition number
+            i == 0,                 # bootable
+            disk_ptr // 512,        # starting sector
+            part_sizes[i] // 512,   # sector count
+            0x01                    # type: DOS 2.0+ FS
+    )
+
+# concatenate bootloader and partition images
+with open(outfile, "wb") as outfh:
+    # copy bootloader image
+    outfh.write(bootloader)
+
+    # copy partition images
+    for f in partitions:
+        with open(f, "rb") as fh:
+            shutil.copyfileobj(fh, outfh)
+
+print("Wrote MBR disk image")
