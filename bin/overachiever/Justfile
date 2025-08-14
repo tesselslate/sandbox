@@ -1,0 +1,49 @@
+# lists all targets
+default:
+    @just --list
+
+# package lua bytecode
+build_lua:
+    mkdir -p out
+    for f in src/*.lua; do \
+        luajit -b -g $f out/`basename $f .lua`.o; \
+    done
+    ar rcs out/libluafiles.a out/*.o
+
+# build with flags
+build $CFLAGS:
+    mkdir -p out
+    gcc src/*.c -lluajit-5.1 -lraylib -L out \
+        -Wl,--whole-archive -lluafiles -Wl,--no-whole-archive -Wl,-E \
+        -Wall -Wextra -Werror -pedantic $CFLAGS \
+        -o out/overachiever
+
+# build with debug flags
+build_debug:
+    @just build_lua
+    @just build "-O0 -fsanitize=undefined"
+
+# build with release flags
+build_release:
+    @just build_lua
+    @just build "-O2"
+
+# build with debug flags and run
+run:
+    @just build_debug
+    out/overachiever
+
+# clean build artifacts
+clean:
+    rm -f out/*
+
+# install overachiever - requires root privileges
+install:
+    @just clean
+    @just build_release
+    cp out/overachiever /usr/local/bin
+    chmod +x /usr/local/bin/overachiever
+
+# uninstall overachiever - requires root privileges
+uninstall:
+    rm /usr/local/bin/overachiever

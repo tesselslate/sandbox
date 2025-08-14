@@ -1,0 +1,9 @@
+[package]
+name = "gen"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+crunch = "0.3.3"
+image = "^0.24.1"
+zip = "^0.5"
