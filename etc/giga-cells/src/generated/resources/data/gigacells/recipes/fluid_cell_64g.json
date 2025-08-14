@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "gigacells:cell_component_64g"
+    },
+    {
+      "item": "gigacells:fluid_cell_housing_mk1"
+    }
+  ],
+  "result": {
+    "item": "gigacells:fluid_cell_64g"
+  }
+}

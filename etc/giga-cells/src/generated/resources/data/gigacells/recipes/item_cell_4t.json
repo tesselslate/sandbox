@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "gigacells:cell_component_4t"
+    },
+    {
+      "item": "gigacells:item_cell_housing_mk2"
+    }
+  ],
+  "result": {
+    "item": "gigacells:item_cell_4t"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cell_component_4g": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "gigacells:cell_component_4g"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "gigacells:fluid_cell_4g"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_cell_component_4g",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "gigacells:fluid_cell_4g"
+    ]
+  },
+  "sends_telemetry_event": false
+}
