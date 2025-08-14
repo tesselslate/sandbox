@@ -1,0 +1,137 @@
+# place archive
+
+Reddit has released the official /r/place data.
+[See here](https://www.reddit.com/r/place/comments/txvk2d/rplace_datasets_april_fools_2022/)
+
+# Table of Contents
+
+- [Examples](#examples)
+  - [Decoder](#decoder)
+  - [Image](#image)
+- [Data Format](#data-format)
+  - [Diff Blobs](#diff-blobs)
+  - [Diff Elements](#diff-elements)
+  - [Color Table](#color-table)
+
+# Examples
+
+Here are some simple example usages of the diff set. These are quite slow since
+they're written in Python, but it should be fairly trivial to port them to the
+language of your choice.
+
+## Decoder
+
+Functions as both a simple library for decoding the diff files and as a short
+usage example. **This program is quite slow and will output potentially millions
+of lines of text. Comment out the for loop over individual diffs to run faster.**
+
+```sh
+python decode.py <path-to-diffs>
+```
+
+- `path-to-diffs` - path to the diffs `.bin` file
+
+## Image
+
+Creates an image from the r/place data at a specified time. Requires Pillow and
+numpy. This applies the diffs linearly, and as such is quite slow when generating
+an image from hours or days of data.
+
+```sh
+python image.py <path-to-diffs> <path-to-out> <unix-millis>
+
+# example for part 1 data:
+python image.py /mnt/hdd/place-day2.bin out.png 1648939182335
+```
+
+- `path-to-diffs` - path to the diffs `.bin` file
+- `path-to-out` - path to the image output destination
+- `unix-millis` - unix millis timestamp to generate the image at
+
+# Data Format
+
+All files with the `.bin` extension are uncompressed. `.bin.zstd` files have
+been compressed with [Zstandard](https://github.com/facebook/zstd); feel free
+to download those if you are able to decompress zstd data and want a faster
+download.
+
+## Diff Blobs
+
+The uncompressed data files consist of a series of "diff blobs," containing all
+of the changes sent by the Reddit server at a given unix timestamp. These diff
+blobs are sorted by timestamp, from least to greatest. Here is a simple mockup
+of the "diff blob" struct in C:
+
+```c
+typedef struct {
+    uint64_t time;          // unix millis timestamp
+    uint32_t count;         // the number of diff elements in this blob
+    uint32_t diffs[count];  // array of diff elements
+} DiffBlob;
+```
+
+The file contains nothing but these blobs, laid in sequence one after another.
+There is no padding between blobs; all numbers are stored as little-endian.
+
+## Diff Elements
+
+Each diff element contains information about the position and color of the
+diff, packed in a simple manner to save space.
+
+- x: bits 0-11
+- y: bits 12-23
+- color: bits 24-31
+
+Here is a simple snippet of C code to recover these values from a diff element:
+
+```c
+void extract_diff(uint32_t diff) {
+    uint16_t x     = diff & 0x00000FFF;
+    uint16_t y     = (diff & 0x00FFF000) >> 12;
+    uint32_t index = (diff & 0xFF000000) >> 24;
+
+    // return or use these values as you see fit
+}
+```
+
+## Color Table
+
+`index` from the above example is a 0-based index into the following table of
+hexadecimal colors, stored in the format RRGGBB:
+
+```cpp
+std::unordered_map<uint32_t, uint8_t> colors {
+    { 0, 0x6D001A },
+    { 1, 0xBE0039 },
+    { 2, 0xFF4500 },
+    { 3, 0xFFA800 },
+    { 4, 0xFFD635 },
+    { 5, 0xFFF8B8 },
+    { 6, 0x00A368 },
+    { 7, 0x00CC78 },
+    { 8, 0x7EED56 },
+    { 9, 0x00756F },
+    { 10, 0x009EAA },
+    { 11, 0x00CCC0 },
+    { 12, 0x2450A4 },
+    { 13, 0x3690EA },
+    { 14, 0x51E9F4 },
+    { 15, 0x493AC1 },
+    { 16, 0x6A5CFF },
+    { 17, 0x94B3FF },
+    { 18, 0x811E9F },
+    { 19, 0xB44AC0 },
+    { 20, 0xE4ABFF },
+    { 21, 0xDE107F },
+    { 22, 0xFF3881 },
+    { 23, 0xFF99AA },
+    { 24, 0x6D482F },
+    { 25, 0x9C6926 },
+    { 26, 0xFFB470 },
+    { 27, 0x000000 },
+    { 28, 0x515252 },
+    { 29, 0x898D90 },
+    { 30, 0xD4D7D9 },
+    { 31, 0xFFFFFF }
+};
+```

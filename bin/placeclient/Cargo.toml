@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "download",
+    "reddit",
+    "ws-scrape"
+]

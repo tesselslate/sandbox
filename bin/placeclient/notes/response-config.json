@@ -1,0 +1,33 @@
+{
+    "payload":{
+        "data":{
+            "subscribe":{
+                "id":"8e463f42-d05d-4b72-b5dc-a2abdf83f477",
+                "data":{
+                    "__typename":"ConfigurationMessageData",
+                    "canvasConfigurations":[
+                        {
+                            "index":0,
+                            "dx":0,
+                            "dy":0,
+                            "__typename":"CanvasConfiguration"
+                        },
+                        {
+                            "index":1,
+                            "dx":1000,
+                            "dy":0,
+                            "__typename":"CanvasConfiguration"
+                        }
+                    ],
+                    "canvasWidth":1000,
+                    "canvasHeight":1000,
+                    "__typename":"ConfigurationMessageData"
+                },
+                "__typename":"BasicMessage",
+                "__typename":"BasicMessage"
+            }
+        }
+    },
+    "id":"1",
+    "type":"data"
+}
